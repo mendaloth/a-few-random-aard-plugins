@@ -5,7 +5,8 @@ Aardwolf Instinct/Mastery Reporter v 1.0
 help report                --> Displays this help file and the mudside help
                              >  file for the report command.
 report instinct <chan>     --> Reports instinct. If <chan> is omitted 
-                             > reports to the room.
+                             > reports to the room. WARNING: will not work
+                             > if you have a pagesize set below 51.
 report mastery  <chan>     --> Reports mastery. If <chan> is omitted reports
                              >  to the room.
 ----------------------------------------------------------------------------
