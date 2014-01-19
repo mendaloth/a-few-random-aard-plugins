@@ -1,0 +1,20 @@
+= Introduction =
+This plugin is a very simple repop reporter, which sends a short message to a channel when the plugin receives a GMCP repop event.  Unlike triggers based on repop messages, this will work in any area and for as long as GMCP works as it does currently. 
+
+= Help File =
+<code language="xml">
+Repop Reporter v 1.0
+-------------------------------------------------------------------------------
+
+repop help                   - Displays this message
+repop setchan <channel name> - Sets the channel that repop will be reported on.
+repop setcolor1 <colorcode>  - Sets first color code.
+repop setcolor2 <colorcode>  - Sets second color code.
+
+-------------------------------------------------------------------------------
+</code> 
+
+= Download and installation. =
+  # Download the file from here - [http://a-few-random-aard-plugins.googlecode.com/svn/trunk/Aardwolf_Repop_Reporter.xml].
+  # Save the file to your Muschlient Install folder.  I recommend creating a sub-folder inside the plugins folder called something like "My Plugins." This makes it easier to move to a new install of Mushclient, by just moving that folder.
+  # Go to MUSHclient's File menu, select 'Plugins' (Shift+Ctrl+P), and then click on the 'Add' button. Choose the appropriate plugin file from the file browser.
