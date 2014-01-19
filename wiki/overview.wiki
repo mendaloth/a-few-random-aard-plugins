@@ -1,0 +1,18 @@
+#summary Summary and Download Links to A Few Random Aardwolf Plugins.
+
+= Introduction =
+
+This Google code project hosts a few plugins for the Mushclient and [http://www.aardwolf.com/ Aardwolf].  Hopefully you will find them a useful addition!  Suggestions and ideas on these or any other plugins are always welcome!
+
+
+= Details =
+
+|| *Plugin* || *Description* || 
+|| [EquipmentExporterOverview Equipment Exporter]|| Automatically exports the stats and data from all of your equipment into CSV files. ||
+|| [ProgressReporterOverview Progress Reporter] || Compares how many levels and how much experience you have gained compared to an "end game" !T9R7L201 character. ||
+|| [RepopReporterOverview Repop Reporter] || A simple plugin to report when an area repops. ||
+|| [FakeTrackerChannelOverview Fake Tracker Channel] || This plugin creates a fake "tracker" channel to limit the spam on your other channels. ||
+|| [RsocialsCaptureOverview Remote Social Capture] ||  This plugin captures any remote socials and sends them to Fiendish's Chat Window.||
+|| [MessageGaggerOverview Message Gagger] ||  This plugin gags messages contained in a text file.  The text file comes preloaded with a lot of spellup messages.||
+|| [AutoDonaterOverview  Auto Clan Donater] ||  This plugin captures donates a set percentage of gold after a set number of powerups.||
+|| [ChannelSnoozer Channel Snoozer] ||  This plugin will turn snooze a channel, turning it off then automatically turning it back on after the set amount of time has passed.||
