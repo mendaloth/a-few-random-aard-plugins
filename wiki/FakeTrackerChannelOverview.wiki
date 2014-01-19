@@ -1,0 +1,36 @@
+= Introduction =
+This plugin creates a fake "tracker" channel to limit the spam on your other channels.
+
+= Help File =
+<code language="xml">
+Aardwolf Fake Tracker Channel v 1.0
+
+<=================== ACTIONS ===================>
+tracker help                   --> Displays this message.                                 
+tracker -h                     --> Displays up to 100 of the last tracker
+                                 > channel messages.
+tracker                        --> To use just set your tracker plugins to 
+                                 > send to channel "tracker". 
+								 
+
+<==================== SETUP ====================>
+1) Create a mudside alias using this command:
+      "alias tracker echo {chan ch=tracker}@r[@RTracker@r]@w:"
+  Note: You can change the color codes to whatever you like, but the {chan ch=tracker} 
+     is required and must be a different color than the part after.
+
+
+<========== WHY IS IT SETUP LIKE THIS?==========>
+In case you are wondering why a plugin would require a mudside alias:
+The mudside alias is the cleanest way to create this plugin. That way it will work
+with all your existing plugins.  If it was a Mushclient alias all the existing
+plugins that have channels set would need to send to Execute.
+
+-------------------------------------------------
+</code> 
+
+= Download and installation. =
+  # Download the file from here - [http://a-few-random-aard-plugins.googlecode.com/svn/trunk/Aardwolf_Fake_Tracker_Channel.xml].
+  # Save the file to your Muschlient Install folder.  I recommend creating a sub-folder inside the plugins folder called something like "My Plugins." This makes it easier to move to a new install of Mushclient, by just moving that folder.
+  # Go to MUSHclient's File menu, select 'Plugins' (Shift+Ctrl+P), and then click on the 'Add' button. Choose the appropriate plugin file from the file browser.  
+  # Create a mudside alias using the following command: "alias tracker echo {chan ch=tracker}@r[@RTracker@r]@w:"
