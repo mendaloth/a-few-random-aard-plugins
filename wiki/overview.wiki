@@ -16,3 +16,6 @@ This Google code project hosts a few plugins for the Mushclient and [http://www.
 || [MessageGaggerOverview Message Gagger] ||  This plugin gags messages contained in a text file.  The text file comes preloaded with a lot of spellup messages.||
 || [AutoDonaterOverview  Auto Clan Donater] ||  This plugin captures donates a set percentage of gold after a set number of powerups.||
 || [ChannelSnoozer Channel Snoozer] ||  This plugin will turn snooze a channel, turning it off then automatically turning it back on after the set amount of time has passed.||
+|| [InstinctMasteryReporterOverview Instinct and Mastery Reporter] ||  This plugin will report your instinct and mastery to the room or a channel.||
+
+
