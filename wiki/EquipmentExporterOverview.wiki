@@ -1,0 +1,43 @@
+#summary One-sentence summary of this page.
+
+= Introduction =
+
+Add your content here.
+
+
+= Help File =
+<code language="xml">
+Aardwolf Equipment Exporter 1.05  Help
+
+         Simple Commands
+
+exporter help           - Displays this information page.
+
+exporter all            - Captures all information from your bags, inventory,
+                          and worn equipment automatically. Warning this takes
+                          a few minutes, as it takes each item out of your bags one by
+                          one.  
+      
+         Options Below Can Used to Capture Only a Portion of Equipment
+                                    
+exporter <bagid>        - Will export the equipment from the bag with <bagid>.
+                          You can find the id by typing "id keyword" (where the
+                          bag's keyword is a keyword from the bag). It will be
+                          a big number on the line below the Name.
+exporter inv            - Will export the equipment in your inventory, but not
+                          in a bag
+exporter worn           - Will export the equipment you are currently wearing.
+exporter clear          - Will clear any equipment data currently imported.
+                          Nothing is saved between sessions, this is only used
+                          if you want to start over in the same MUSHClient session.
+exporter export         - Exports the information to a file when done capturing.
+
+        Just a simple utility function Used by the Plugin's Author
+  
+exporter portals        - Put portals in the portal bag.
+</code> 
+
+= Download and installation. =
+  # Download the file from here - [http://a-few-random-aard-plugins.googlecode.com/svn/trunk/Aardwolf_Equipment_Exporter.xml].
+  # Save the file to your Muschlient Install folder.  I recommend creating a sub-folder inside the plugins folder called something like "My Plugins." This makes it easier to move to a new install of Mushclient, by just moving that folder.
+  # Go to MUSHclient's File menu, select 'Plugins' (Shift+Ctrl+P), and then click on the 'Add' button. Choose the appropriate plugin file from the file browser.
