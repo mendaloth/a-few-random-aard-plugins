@@ -1,0 +1,37 @@
+<font color="red"> *! WARNING !* </font> 
+<code language="xml">
+This plugin is not recommend for use at lower tiers as it might be hazardous to your morale. 
+ 
+The author himself did not make it until they had reached T6.  The halfway point for 
+experience is T6R3L175.  You have been warned.
+</code>
+
+= Help File =
+<code language="xml">
+Aardwolf Experience Reporter v1.0.9 Help
+
+progress <channel>               -  Will send to the <channel> a players total
+                                    experience, total levels, and SHs remaining
+                                    until T9 SH.
+                                                               
+progress hypo <channel> TxRxLx   -  Will send to the <channel> a hypothetical players
+                                    total experience, total levels, and SHs remaining
+                                    until T9 SH.
+                                                                       
+progress other <name> <channel>  -  Will finger player with <name> and capture that
+                                    players progress compared to a T9 SH and send that
+                                    information to the <channel>.
+
+progress toggle expsetting       -  A change in July 2012 decreased the exp for T0/T1
+                                    players.  When this is ON, the plugin will calculate
+                                    your exp using the lower exp for T0/T1.  For now
+                                    this setting defaults to off, and won't save across
+                                    sessions.
+                                                                       
+progress help                    -  Displays this help file.
+</code> 
+
+= Download and installation. =
+  # Download the file from here - [http://a-few-random-aard-plugins.googlecode.com/svn/trunk/Aardwolf_Experience_Reporter.xml].
+  # Save the file to your Muschlient Install folder.  I recommend creating a sub-folder inside the plugins folder called something like "My Plugins." This makes it easier to move to a new install of Mushclient, by just moving that folder.
+  # Go to MUSHclient's File menu, select 'Plugins' (Shift+Ctrl+P), and then click on the 'Add' button. Choose the appropriate plugin file from the file browser.
