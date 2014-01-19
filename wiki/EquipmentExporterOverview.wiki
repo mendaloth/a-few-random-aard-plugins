@@ -1,10 +1,3 @@
-#summary One-sentence summary of this page.
-
-= Introduction =
-
-Add your content here.
-
-
 = Help File =
 <code language="xml">
 Aardwolf Equipment Exporter 1.05  Help
@@ -12,12 +5,11 @@ Aardwolf Equipment Exporter 1.05  Help
          Simple Commands
 
 exporter help           - Displays this information page.
-
 exporter all            - Captures all information from your bags, inventory,
                           and worn equipment automatically. Warning this takes
                           a few minutes, as it takes each item out of your bags one by
                           one.  
-      
+
          Options Below Can Used to Capture Only a Portion of Equipment
                                     
 exporter <bagid>        - Will export the equipment from the bag with <bagid>.
