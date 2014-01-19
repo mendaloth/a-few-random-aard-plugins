@@ -25,8 +25,6 @@ A good deal of spellup messages are pre-loaded in the txt file downloaded using 
 = Download and installation. =
   # Download the plugin file from here - [http://a-few-random-aard-plugins.googlecode.com/svn/trunk/Aardwolf_Message_Gagger.xml].
   # Save the file to your Muschlient Install folder.  I recommend creating a sub-folder inside the plugins folder called something like "My Plugins." This makes it easier to move to a new install of Mushclient, by just moving that folder.
-  # Download the file containing the messages to gag from here - [http://code.google.com/p/a-few-random-aard-plugins/source/browse/trunk/messages_to_gag.txt]
+  # Download the file containing the messages to gag from here - [http://code.google.com/p/a-few-random-aard-plugins/svn/trunk/messages_to_gag.txt]
   # Save the .txt file to your Muschlient Install folder.  It must be in the same folder as the mushclient.exe file.
   # Go to MUSHclient's File menu, select 'Plugins' (Shift+Ctrl+P), and then click on the 'Add' button. Choose the appropriate plugin file from the file browser.
-
-
