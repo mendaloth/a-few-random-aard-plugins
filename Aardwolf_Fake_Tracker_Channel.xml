@@ -143,8 +143,6 @@ function Print_Tracker_History()
 	
 	for key, value in pairs(tracker_history) do
 		styles = value
-		Note("Styles for key '"..key.."': ")
-		tprint(styles)
 			for _, v in ipairs (styles) do
 				--Borrowed this code from here: http://www.gammon.com.au/forum/bbshowpost.php?bbsubject_id=9713
 				--Why must printing the same line with coloring be so complicated.
