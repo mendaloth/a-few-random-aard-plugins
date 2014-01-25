@@ -195,7 +195,7 @@ function trim(s)
 end
 
 function Refresh_Instinct_Amounts()
-	Capture_Between_Tags("                                                   ---- Next Cost ----", "You have * available for instinct.", "Process_Instinct_Line", true, false, true, "Done_Instinct_Capture") 
+	Capture_Between_Tags([[^                                                   ---- Next Cost ----$]], [[^You have (\d+) trains? available for instinct.$]], "Process_Instinct_Line", true, true, true, "Done_Instinct_Capture", [[%1]]) 
 	SendNoEcho("instinct all")
 end
 
@@ -217,7 +217,7 @@ function Process_Instinct_Line(_, line, _, _)
 	end
 end
 
-function Done_Instinct_Capture()
+function Done_Instinct_Capture(trains_available)
 	local formatted_info = ""
 	local highest_instinct = Find_Highest_Instinct()
 	local grouped_instincts = {}
@@ -257,6 +257,12 @@ function Done_Instinct_Capture()
 	local text_of_grouped_instinct = {}
 	for key, value in pairs(grouped_instincts) do
 		table.insert(text_of_grouped_instinct, first_color .. table.concat(value.instincts, second_color .. ", " .. first_color) .. second_color ..": " .. value.amount)
+	end
+	
+	if (tonumber(trains_available) == 1) then
+		table.insert(text_of_grouped_instinct, first_color .. "Train Available" .. second_color ..": " .. trains_available)
+	else
+		table.insert(text_of_grouped_instinct, first_color .. "Trains Available" .. second_color ..": " .. trains_available)
 	end
 	
 	--Now that we have all the instincts at same level formatted and in their own rows by the amount purchased
