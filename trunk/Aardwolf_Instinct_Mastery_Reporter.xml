@@ -19,7 +19,7 @@
    >
 <description trim="y">
 <![CDATA[
-Aardwolf Instinct/Mastery Reporter v 1.0
+Aardwolf Instinct/Mastery Reporter v 1.01
 <================================ ACTIONS =================================>
 help report                --> Displays this help file and the mudside help
                              >  file for the report command.
@@ -161,7 +161,8 @@ function Capture_Between_Tags(start_tag, end_tag, send_to_function, omit_from_ou
 		if (value_to_pass_to_function == nil) then
 			function_to_call_at_end_tag = " " .. function_to_call_at_end_tag .. "()"
 		else
-			function_to_call_at_end_tag = " " .. function_to_call_at_end_tag .. "(" .. value_to_pass_to_function .. ")"
+			function_to_call_at_end_tag = " " .. function_to_call_at_end_tag .. "('" .. value_to_pass_to_function .. "')"
+			  --Don't reuse this function - added a change to it to work and not quite sure it works everywhere :)
 		end
 	end
 	
@@ -175,6 +176,7 @@ function Capture_Between_Tags(start_tag, end_tag, send_to_function, omit_from_ou
 			send_to = 12,
 			send = "EnableTrigger('ending_tag'.."..unique_id..", false)	EnableTrigger('capture_all'.." .. unique_id .. ", false)" .. function_to_call_at_end_tag
 		  }
+		
 		  
 	addxml.trigger {     match="^.*$",
 		regexp = true,
@@ -195,7 +197,7 @@ function trim(s)
 end
 
 function Refresh_Instinct_Amounts()
-	Capture_Between_Tags([[^                                                   ---- Next Cost ----$]], [[^You have (\d+) trains? available for instinct.$]], "Process_Instinct_Line", true, true, true, "Done_Instinct_Capture", [[%1]]) 
+	Capture_Between_Tags([[^                                                   ---- Next Cost ----$]], [[^You have (.*?) trains? available for instinct.$]], "Process_Instinct_Line", true, true, true, "Done_Instinct_Capture", [[%1]]) 
 	SendNoEcho("instinct all")
 end
 
@@ -259,7 +261,15 @@ function Done_Instinct_Capture(trains_available)
 		table.insert(text_of_grouped_instinct, first_color .. table.concat(value.instincts, second_color .. ", " .. first_color) .. second_color ..": " .. value.amount)
 	end
 	
-	if (tonumber(trains_available) == 1) then
+	local remove_commas = string.gsub(trains_available, ",", "")
+	
+	trains_available = tonumber(remove_commas) --remove any separators and convert to a number.
+	
+	--if (trains_available) then
+		--trains_available = 0  --something has gone wrong set it to zero.
+	--end
+	
+	if (trains_available == 1) then
 		table.insert(text_of_grouped_instinct, first_color .. "Train Available" .. second_color ..": " .. trains_available)
 	else
 		table.insert(text_of_grouped_instinct, first_color .. "Trains Available" .. second_color ..": " .. trains_available)
