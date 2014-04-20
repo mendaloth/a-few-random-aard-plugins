@@ -133,16 +133,20 @@ function ProcessTrackerMessage (name, line, wildcards, styles)
 end -- a
 
 function Print_Tracker_History()
-	require "tprint"
+	--[[require "tprint"
+	
 	if (tracker_history == nil) then
 		Note("Tracker history is nil")
 	else
 		tprint(tracker_history)
 		Note("")
 	end
+	--]]
 	
 	for key, value in pairs(tracker_history) do
 		styles = value
+		--tprint(styles)
+		--Note("Styles for key '"..key.."': ")
 			for _, v in ipairs (styles) do
 				--Borrowed this code from here: http://www.gammon.com.au/forum/bbshowpost.php?bbsubject_id=9713
 				--Why must printing the same line with coloring be so complicated.
