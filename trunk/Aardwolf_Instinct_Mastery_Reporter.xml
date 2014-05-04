@@ -40,6 +40,108 @@ report mastery  <chan>     --> Reports mastery. If <chan> is omitted reports
 
 <triggers>
 
+<trigger
+   enabled="n"
+   regexp="y"
+   omit_from_output="y"
+   match="^                                                   ---- Next Cost ----$"
+   sequence="100"
+   name="instinct_capture_start"
+   group="instinct_capture"
+   send_to = "12"
+  >
+   <send>
+	EnableTriggerGroup("instinct_capture", true)
+  </send>
+>
+</trigger>
+
+<trigger
+   enabled="n"
+   regexp="y"
+   omit_from_output="y"
+   match="^You have (.*?) trains? available for instinct.$"
+   sequence="95"
+   group="instinct_capture"
+   send_to = "12"
+  >
+   <send>
+    EnableTrigger("paging_prompt", false)
+	EnableTriggerGroup("instinct_capture", false)
+	Done_Instinct_Capture("%1")
+  </send>
+>
+
+</trigger>
+
+<trigger
+   enabled="n"
+   regexp="y"
+   omit_from_output="n"
+   match="^\[ Paging \:(.*?)$"
+   sequence="90"
+   send_to="12"
+   name="paging_prompt"
+   script="On_Paging_Error"
+>
+</trigger>
+
+<trigger
+   enabled="n"
+   regexp="y"
+   omit_from_output="y"
+   match="^(.*?)$"
+   sequence="100"
+   send_to="12"
+   group="instinct_capture"
+   script="Process_Instinct_Line"
+>
+</trigger>
+
+<trigger
+   enabled="n"
+   regexp="n"
+   omit_from_output="y"
+   match="*Mastery QP      Gold*"
+   sequence="100"
+   name="mastery_capture_start"
+   group="mastery_capture"
+   send_to = "12"
+  >
+   <send>
+	EnableTriggerGroup("mastery_capture", true)
+  </send>
+>
+</trigger>
+
+<trigger
+   enabled="n"
+   regexp="n"
+   omit_from_output="y"
+   match="Water*"
+   sequence="95"
+   group="mastery_capture"
+   send_to = "12"
+  >
+   <send>
+    EnableTrigger("paging_prompt", false)
+	EnableTriggerGroup("mastery_capture", false)
+	Done_Mastery_Capture()
+  </send>
+>
+
+</trigger>
+<trigger
+   enabled="n"
+   regexp="y"
+   omit_from_output="y"
+   match="^(.*?)$"
+   sequence="100"
+   send_to="12"
+   group="mastery_capture"
+   script="Process_Mastery_Line"
+>
+</trigger>
 </triggers>
 
 <aliases>	  
@@ -119,85 +221,13 @@ instinct = {}
 mastery = {}
 report_channel = ""
 
-function Capture_Between_Tags(start_tag, end_tag, send_to_function, omit_from_output_val, regex_val, one_shot_val, function_to_call_at_end_tag, value_to_pass_to_function) 
--- Mendaloth's utlility function Capture_Between_Tags ver 1.01
--- omit_from_output is optional, defaults to false
--- regex is optional, defaults to false, and you must supply omit_from_output in order to use it
--- oneshot is optional, defaults to false, and you must supply omit_from_output and regex in order to use it
--- added function_to_call_at_end_tag, and value_to_pass_to_function both optional
-	
-	require "addxml"
-
-	if (omit_from_output_val == nil) then
-		omit_from_output_val = false
-	end
-	
-
-	if (regex_val == nil) then
-		regex_val = false
-	end
-	
-	if (one_shot_val == nil) then
-		one_shot_val = false
-	end
-
-	local unique_id = GetUniqueNumber()
-	
-	--Open tag trigger
-	addxml.trigger {  match = start_tag, 
-			regexp = regex_val,
-			enabled = true,
-			one_shot = one_shot_val,
-			sequence = 50,
-			omit_from_output = omit_from_output_val,
-			name = "starting_tag"..unique_id,
-			send_to = 12,
-			send = "EnableTrigger('ending_tag'.."..unique_id..", true)	EnableTrigger('capture_all'.." .. unique_id .. ", true)"
-		  }
-
-	if (function_to_call_at_end_tag == nil) then
-		function_to_call_at_end_tag = ""
-	else
-		if (value_to_pass_to_function == nil) then
-			function_to_call_at_end_tag = " " .. function_to_call_at_end_tag .. "()"
-		else
-			function_to_call_at_end_tag = " " .. function_to_call_at_end_tag .. "('" .. value_to_pass_to_function .. "')"
-			  --Don't reuse this function - added a change to it to work and not quite sure it works everywhere :)
-		end
-	end
-	
-	addxml.trigger {  match = end_tag, 
-			regexp = regex_val,
-			enabled = false,
-			one_shot = one_shot_val,
-			omit_from_output = omit_from_output_val,
-			name = "ending_tag"..unique_id,
-			sequence = 5,
-			send_to = 12,
-			send = "EnableTrigger('ending_tag'.."..unique_id..", false)	EnableTrigger('capture_all'.." .. unique_id .. ", false)" .. function_to_call_at_end_tag
-		  }
-		
-		  
-	addxml.trigger {     match="^.*$",
-		regexp = true,
-		enabled = false,
-		omit_from_output = omit_from_output_val,
-		sequence = 50,
-		keep_evaluating=false,
-		name = "capture_all"..unique_id,
-		script = send_to_function
-	}
-		  
-end
-
-
-
 function trim(s)
   return (s:gsub("^%s*(.-)%s*$", "%1"))
 end
 
 function Refresh_Instinct_Amounts()
-	Capture_Between_Tags([[^                                                   ---- Next Cost ----$]], [[^You have (.*?) trains? available for instinct.$]], "Process_Instinct_Line", true, true, true, "Done_Instinct_Capture", [[%1]]) 
+	EnableTrigger("instinct_capture_start", true)
+	EnableTrigger("paging_prompt", true)
 	SendNoEcho("instinct all")
 end
 
@@ -207,11 +237,17 @@ function Process_Instinct_Line(_, line, _, _)
 		--It's a blank line or filled with -, do nothing.
 	else
 		local skill_name = trim(string.sub(line, 11, (11+22)))
+		
 		if (skill_name == "Skill name") then
 			--This is the first line so just ignore it.
 			return
 		end
 		instinct_amount = tonumber(trim(string.sub(line, 42, (42+8))))
+		
+		if (instinct_amount == nil) then
+			--This will capture prompts so just ignore them.
+			return
+		end
 		
 		instinct[skill_name] = {}
 		
@@ -287,7 +323,8 @@ function Done_Instinct_Capture(trains_available)
 end
 
 function Refresh_Mastery_Amounts()
-	Capture_Between_Tags("              Mastery QP      Gold", "Water*", "Process_Mastery_Line", true, false, true, "Done_Mastery_Capture") 
+	EnableTrigger("mastery_capture_start", true)
+	EnableTrigger("paging_prompt", true)
 	SendNoEcho("mastery")
 end
 
@@ -386,6 +423,13 @@ function Find_Highest_Mastery()
 		end
 	end
 	return highest
+end
+
+function On_Paging_Error()	
+	EnableTriggerGroup("instinct_capture", false)
+	EnableTriggerGroup("mastery_capture", false)
+	EnableTrigger("paging_prompt", false)
+	Note("Oops, a paging prompt interupted the capture.  Set your pagesize higher and then try again.")
 end
 
 ]]>
