@@ -9,6 +9,8 @@ report instinct <chan>     --> Reports instinct. If <chan> is omitted
                              > if you have a pagesize set below 51.
 report mastery  <chan>     --> Reports mastery. If <chan> is omitted reports
                              >  to the room.
+
+Note: You'll need a fairly large pagesize for this to work properly.  If you have a smaller page size the plugin should warn you, but it won't report anything.
 ----------------------------------------------------------------------------
 
 This plugin was made possible through the generous support of Hwuaijijal.
