@@ -21,7 +21,7 @@
 <description trim="n">
 <![CDATA[
 --------------------------------------------------------------------------------
-Aardwolf Experience Reporter v1.0.9 Help
+Aardwolf Experience Reporter v1.1.0 Help
 
 progress <channel>               -  Will send to the <channel> a players total
                                     experience, total levels, and SHs remaining
@@ -35,13 +35,17 @@ progress other <name> <channel>  -  Will finger player with <name> and capture t
                                     players progress compared to a T9 SH and send that
                                     information to the <channel>.
 
-progress toggle expsetting       -  A change in July 2012 decreased the exp for T0/T1
-                                    players.  When this is ON, the plugin will calculate
-                                    your exp using the lower exp for T0/T1.  For now
-                                    this setting defaults to off, and won't save across
-                                    sessions.
-									
+progress toggle expsetting       -  A change in July 2014 decreased the exp across all
+                                    tiers.  When this is ON, the plugin will calculate
+                                    your exp using the lower exp.  For now this setting
+									defaults to OFF, and won't save across sessions.
+									*See note below....
+                                    
 progress help                    -  Displays this help file.
+
+*Since the plugin doesn't know how much of your previous exp was under the old or new 
+system, it just assumes you got all of your previous exp under the same system.  This
+is controlled by whichever system is toggled.
 									
 ]]>
 </description>   
@@ -134,6 +138,19 @@ progress help                    -  Displays this help file.
 	</alias>
 	
 	<alias
+		match="progress exptable"
+		enabled="y"
+		send_to="12"
+		sequence="1"
+		ignore_case="y"
+	>
+		<send>
+			--Non-documented function mainly used for debugging
+			Show_Exp_Table()
+		</send> 
+	</alias>
+	
+	<alias
 	match="progress toggle expsetting"
 	enabled="y"
 	send_to="12"
@@ -143,10 +160,10 @@ progress help                    -  Displays this help file.
 	<send>
 		if (exp_setting) then
 			exp_setting = false
-			Note("The experience will be calculated with the values from before T0/T1 experience was changed in July 2012.")
+			Note("The experience will be calculated with the values from before experience was changed in July 2014.")
 		else
 			exp_setting = true
-			Note("The experience will be calculated with the new values for T0/T1 experience from the July 2012 changes.")
+			Note("The experience will be calculated with the new values for experience from the July 2014 changes.")
 		end
 	</send> 
 	</alias>
@@ -253,25 +270,17 @@ function tnl(tier,remort)
 -- and the needed kick in the butt to finally complete this project
 -- I had been thinking about for a while.  All of the good things
 -- in the function are his, all mistakes and errors are Mendaloth's alone :).
--- Added changes to reflect July 31, 2012 reboot
---
-	local new_max_tnl = 10000
+-- Been reworked to reflect changes in July 20, 2014 reboot.
 
-	if (tier == 0) then
-		if (exp_setting) then
-			new_max_tnl = 3000
-		else
-			new_max_tnl = 5000
+	if (exp_setting) then
+		--using the new exp setting so use that function instead.
+		--but only if we aren't on a redo, since redos didn't change
+		if (tier <= 9) then		
+			return new_tnl(tier, remort)
 		end
 	end
-	
-	if (tier == 1) then
-		if (exp_setting) then
-			new_max_tnl = 4000
-		else
-			new_max_tnl = 5000
-		end
-	end
+
+	local new_max_tnl = 10000
 	
 	if (tier > 9) then
 		new_max_tnl = 5000
@@ -295,6 +304,40 @@ function tnl(tier,remort)
 	if tnlval > new_max_tnl then
 		tnlval=new_max_tnl
 	end
+	return tnlval
+end
+
+function new_tnl(tier, remort)
+	local first_mort_tnl = 0
+	
+	if (tier <= 1) then 
+		first_mort_tnl = 1000
+	elseif (tier == 2) then
+		first_mort_tnl = 2000
+	elseif (tier == 3) then
+		first_mort_tnl = 3000
+	elseif (tier == 4) then
+		first_mort_tnl = 3000
+	else 
+		first_mort_tnl = (tier-2) * 1000	
+	end
+	
+	if (remort == 1) then
+		return first_mort_tnl
+	end
+	
+	local max_tnl = (tier * 1000) + 2000
+	
+	if (max_tnl > 10000) then 
+		max_tnl = 10000
+	end
+	
+	local tnlval = first_mort_tnl + ((remort-1)*1000)
+
+	if tnlval > max_tnl then
+		tnlval=max_tnl
+	end
+	
 	return tnlval
 end
 
@@ -438,6 +481,28 @@ function Get_Current_Player_Name()
 
 	return charname
 end
+
+function Show_Exp_Table()
+  if (exp_setting) then
+	--using the new exp setting
+	Note("Experience table after the July 2014 reboot.")
+  else
+	Note("Experience table before the July 2014 reboot.")
+  end
+		
+  Note("          R1       R2       R3       R4       R5       R6       R7")
+  Note("          -------- -------- -------- -------- -------- -------- --------")
+  local line = ""
+  	for tier_counter = 0, 9, 1 do
+	    line = "Tier " .. tier_counter .. " :    "
+		for remort_counter = 1, 7, 1 do
+			line = line .. string.format("%-8.8s ", tnl(tier_counter, remort_counter)) 
+		end
+		Note(line)
+		line = ""
+	end
+end
+
 ]]>
 </script>
 
