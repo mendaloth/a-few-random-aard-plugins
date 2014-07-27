@@ -3,7 +3,8 @@
 This plugin is not recommend for use at lower tiers as it might be hazardous to your morale. 
  
 The author himself did not make it until they had reached T6.  The halfway point for 
-experience before the July 2012 reboot was T6R3L175.  After the July 2014 reboot it is T6R6L1.  You have been warned.
+experience before the July 2012 reboot was T6R3L175.  After 
+the July 2014 reboot it is T6R6L1.  You have been warned.
 </code>
 
 = Help File =
