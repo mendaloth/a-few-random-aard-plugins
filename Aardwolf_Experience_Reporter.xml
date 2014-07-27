@@ -38,8 +38,8 @@ progress other <name> <channel>  -  Will finger player with <name> and capture t
 progress toggle expsetting       -  A change in July 2014 decreased the exp across all
                                     tiers.  When this is ON, the plugin will calculate
                                     your exp using the lower exp.  For now this setting
-									defaults to OFF, and won't save across sessions.
-									*See note below....
+                                    defaults to OFF, and won't save across sessions.
+                                    *See note below....
                                     
 progress help                    -  Displays this help file.
 
@@ -105,7 +105,7 @@ is controlled by whichever system is toggled.
 				return
 			end
 
-			Send_Progress_Info("%1", "For a player at ", tier, level, remort, 0)
+			Send_Progress_Info("%1", "For a player at ", tier, level, remort, 0, 0)
 		</send>
 	</alias>
   
@@ -189,7 +189,6 @@ captured_players_redo = 0
 
 experience_first_color = "@x039"
 experience_second_color = "@x165"
-
 
 function Send_Progress_Info(send_to, player_name, player_tier, player_level, player_remort, tnl_until_next_level, player_redos)
 	local total_levels = 0
