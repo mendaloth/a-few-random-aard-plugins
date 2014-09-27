@@ -11,7 +11,7 @@
    author="Mendaloth"
    id="53afe1da36641d8950075f25"
    language="Lua"
-   purpose="Reports information on percent of experience and levels you have gained."
+   purpose="Tracks the number of trains needed to reach stat or hp/mana/moves goals."
    save_state="y"
    date_written="2010-10-08 18:25:13"
    requires="4.61"
@@ -20,7 +20,7 @@
    
 <description trim="n">
 <![CDATA[
-Aardwolf Train Goal Tracker v 1.0
+Aardwolf Train Goal Tracker v 1.01
 <=================== ACTIONS ===================>
 pupgoal help                   --> Displays this message.                                 
 pupgoal setgoal <type> <max>   --> Sets your goal for each type.
@@ -51,11 +51,12 @@ pupgoal milestones <type>      --> Shows the hp/mana/moves milestones where
 
 
   <trigger
-   enabled="y"
+   enabled="n"
    match="^Your stats and amount trained are\:$"
    regexp="y"
    omit_from_output = "y"
    send_to="12"
+   name = "first_line_of_stats_capture"
    sequence="100"
   >
 	  <send>
@@ -65,7 +66,7 @@ pupgoal milestones <type>      --> Shows the hp/mana/moves milestones where
   
   
     <trigger
-   enabled="y"
+   enabled="n"
    match="^              Base    Race   Tier   Wish   Your                    $"
    regexp="y"
    omit_from_output = "y"
@@ -79,7 +80,7 @@ pupgoal milestones <type>      --> Shows the hp/mana/moves milestones where
   </trigger>
   
     <trigger
-   enabled="y"
+   enabled="n"
    match="^              Cost    Mod    Mod    Mod    Cost    Trained    Max  $"
    regexp="y"
    group="start_capture_stats"
@@ -93,7 +94,7 @@ pupgoal milestones <type>      --> Shows the hp/mana/moves milestones where
   </trigger>
   
         <trigger
-   enabled="y"
+   enabled="n"
    match="^              \-\-\-\-\-\-\- \-\-\-\-\-\- \-\-\-\-\-\- \-\-\-\-\-\- \-\-\-\-\-\-  \-\-\-\-\-\-\-  \-\-\-\-\-\-\-$"
    regexp="y"
    group="start_capture_stats"
@@ -108,7 +109,7 @@ pupgoal milestones <type>      --> Shows the hp/mana/moves milestones where
   
     
         <trigger
-   enabled="y"
+   enabled="n"
    match="^Note\: You cannot train any more stats\.$"
    regexp="y"
    group="start_capture_stats"
@@ -122,7 +123,7 @@ pupgoal milestones <type>      --> Shows the hp/mana/moves milestones where
   </trigger>
   
     <trigger
-   enabled="y"
+   enabled="n"
    match="^You have (.*?) training sessions? available\.$"
    regexp="y"
    group="start_capture_stats"
@@ -136,7 +137,7 @@ pupgoal milestones <type>      --> Shows the hp/mana/moves milestones where
   </trigger>
   
   <trigger
-   enabled="y"
+   enabled="n"
    match="^You have (.*?) practice sessions? available\.$"
    regexp="y"
    group="start_capture_stats"
@@ -150,7 +151,7 @@ pupgoal milestones <type>      --> Shows the hp/mana/moves milestones where
   </trigger>
   
   <trigger
-   enabled="y"
+   enabled="n"
    match="^[ ]+You have already hit your maximum of (.*?)\.$"
    regexp="y"
    group="start_capture_stats"
@@ -168,7 +169,7 @@ pupgoal milestones <type>      --> Shows the hp/mana/moves milestones where
   
     
         <trigger
-   enabled="y"
+   enabled="n"
    match="^[ ]+You have already hit your maximum of (.*?)\.$"
    regexp="y"
    group="start_capture_stats"
@@ -227,6 +228,7 @@ pupgoal milestones <type>      --> Shows the hp/mana/moves milestones where
 		if (first_wildcard_trimmed == "Moves") then
 			--this is the last one so return
 			EnableTriggerGroup("start_capture_stats", false)
+			EnableTrigger("first_line_of_stats_capture", false)
 			moves_from_equipment = Get_GMCP_Stat("moves") - trained
 			Execute(command_to_run_after_stats_captured)
 			command_to_run_after_stats_captured = ""
@@ -635,6 +637,7 @@ end
 
 function Refresh_Stats_And_Costs()
 	Note("The plugin is now capturing your stat mods and natural HP/Mana/Moves.")
+	EnableTrigger("first_line_of_stats_capture", true)
 	SendNoEcho("train")
 end
 function trim(s)
