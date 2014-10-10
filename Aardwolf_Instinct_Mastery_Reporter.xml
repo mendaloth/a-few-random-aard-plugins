@@ -116,9 +116,9 @@ report mastery  <chan>     --> Reports mastery. If <chan> is omitted reports
 
 <trigger
    enabled="n"
-   regexp="n"
+   regexp="y"
    omit_from_output="y"
-   match="Water*"
+   match="\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-"
    sequence="95"
    group="mastery_capture"
    send_to = "12"
