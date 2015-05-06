@@ -13,13 +13,14 @@
    language="Lua"
    purpose="Allows use of a fake tracker channel, along with history"
    date_written="2008-10-15 07:35"
-   requires="4.30"
+   requires="4.89"
+   sequence="-5001"
    version="1.0"
    save_state="y"
    >
 <description trim="y">
 <![CDATA[
-Aardwolf Fake Tracker Channel v 1.0
+Aardwolf Fake Tracker Channel v 1.1
 
 <=================== ACTIONS ===================>
 tracker help                   --> Displays this message.                                 
