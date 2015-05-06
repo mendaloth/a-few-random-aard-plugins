@@ -1,0 +1,1 @@
+This is the home for a few random plugins for Aardwolf.  You can look at the [overview](https://code.google.com/p/a-few-random-aard-plugins/wiki/overview?tm=6) of the projects current plugins.  Or [suggest your own idea for a plugin](https://code.google.com/p/a-few-random-aard-plugins/issues/entry?template=Feature%20Request) using the issue tracker.
