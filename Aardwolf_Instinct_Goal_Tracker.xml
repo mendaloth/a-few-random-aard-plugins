@@ -19,7 +19,7 @@
    >
 <description trim="y">
 <![CDATA[
-Aardwolf Instinct Goal Tracker Tracker v 1.0
+Aardwolf Instinct Goal Tracker Tracker v 1.01
 
 <=================== ACTIONS ===================>
 instinct help                   --> Displays this message.                                 
@@ -366,7 +366,7 @@ function trim(s)
 end
 
 function Refresh_Instinct_Amounts()
-	Capture_Between_Tags("                                                   ---- Next Cost ----", "You have * available for instinct.", "Process_Instinct_Line", true, false, true, "Done_Instinct_Capture") 
+	Capture_Between_Tags("                                                   ---- Next Cost ----", "You have * available for instinct*", "Process_Instinct_Line", true, false, true, "Done_Instinct_Capture") 
 	SendNoEcho("instinct all")
 end
 
