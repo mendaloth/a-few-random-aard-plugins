@@ -20,6 +20,8 @@
    
 <description trim="n">
 <![CDATA[
+Aardwolf Potential Goal Tracker v1.0
+
 <=================== ACTIONS ===================>
 potgoal help             --> Displays this message.                                 
 potgoal addgoal <goal>   --> Adds a goal for potential.
