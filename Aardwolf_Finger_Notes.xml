@@ -1,0 +1,352 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE muclient>
+
+<muclient>
+<plugin
+   name="AardwolfFingerNotes"
+   author="Mendaloth"
+   id="c8c16ea02be29fae8e8154cc"
+   language="Lua"
+   purpose="Allows you to store info on a player that shows up when you finger or whois them."
+   save_state="y"
+   date_written="2010-10-08 18:25:13"
+   requires="4.61"
+   version="1.0"
+   >
+   
+<description trim="n">
+<![CDATA[
+--------------------------------------------------------------------------------
+Aardwolf Finger Notes v1.0.2 Help
+
+<=================== ACTIONS ===================>
+fnote help          --> Displays this message.                                 
+fnote <player>      --> Displays any notes you have for
+                      > the player.
+fnote add <player>  --> Adds a note for <player>, or edits
+                      > the note if the player already has
+                      > one.
+fnote showall       --> Shows all players with notes.					  
+fnote del <player>  --> Removes any notes for <player>.
+
+]]>
+</description>   
+
+</plugin>
+
+
+<!--  Get our standard constants -->
+
+<include name="constants.lua"/>
+
+<!--  Triggers  -->
+
+<triggers>
+  
+ <trigger
+   enabled="y"
+   match="^\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\- Player \: (.*?) \((.*?)\) \-\-\-\-\-\-\-\-\-\-\-\-\-\-$"
+   regexp="y"
+   omit_from_output="n"
+   script="Process_Player_Line"
+   sequence="10"
+  >
+  </trigger>
+  
+  <trigger
+   enabled="n"
+   regexp="y"
+   omit_from_output="n"
+   match="\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-"
+   sequence="100"
+   name="endtriggerline"
+   send_to = "12"
+  >
+   <send>
+	Show_Player_Notes(player_name)
+	EnableTrigger("endtriggerline", false)
+  </send>
+>
+</trigger>
+  
+</triggers>
+
+<!--  Aliases  -->
+
+<aliases>  
+
+	<alias
+	match="fnote help"
+	enabled="y"
+	send_to="12"
+	>
+		<send>
+			Note(GetPluginInfo (GetPluginID(), 3))
+			Note("Note: The database file for this plugin is stored at '".. GetInfo (66) .. "player_notes.sqlite'")
+			Note("If you move your Mushclient install, or make a fresh one, copy that file over to the new folder and place it where Mushclient.exe is stored.")
+		</send> 
+	</alias>
+
+	<alias
+		match="fnote add *"
+		enabled="y"
+		sequence="5"
+		expand_variables="y"
+		ignore_case="y"
+		send_to="12"
+	>
+		<send>
+			Add_Edit_Note("%1")
+		</send>
+	</alias>
+	
+	<alias
+		match="fnote showall"
+		enabled="y"
+		sequence="5"
+		expand_variables="y"
+		ignore_case="y"
+		send_to="12"
+	>
+		<send>
+			Show_All_Players_With_Notes()
+		</send>
+	</alias>
+
+	<alias
+		match="fnote *"
+		enabled="y"
+		sequence="101"
+		expand_variables="y"
+		ignore_case="y"
+		send_to="12"
+	>
+		<send>
+			Show_Player_Notes("%1")
+		</send>
+	</alias>
+	
+	<alias
+		match="fnote del *"
+		enabled="y"
+		sequence="5"
+		expand_variables="y"
+		ignore_case="y"
+		send_to="12"
+	>
+		<send>
+			result = utils.msgbox ("Are you sure you want to delete all notes for '%1'?", "You sure?", "okcancel")
+			if (result == "ok") then
+				Delete_Player_Notes("%1")
+			else
+				Note("Delete cancelled.")
+			end	
+		</send>
+	</alias>	
+</aliases>
+
+<!--  Script  -->
+
+
+<script>
+<![CDATA[
+
+function Process_Player_Line(name, line, wildcards)
+	player_name = wildcards[1]
+	EnableTrigger("endtriggerline", true)
+end
+
+function Add_Edit_Note(player_name)
+	result = utils.editbox ("Notes for " .. player_name , "Notes for " .. player_name, Get_Current_Note(player_name))
+
+	if result then
+		if (result == "") then
+			--They blanked the note, ask them if they want to just delete it?
+			result_delete = utils.msgbox ("It looks like you made the note for " .. player_name .. " blank.  Do you want to delete " .. player_name .. " from the database entirely?", "Delete " .. player_name .. "?", "yesno")
+			if (result_delete == "yes") then
+				Delete_Player_Notes(player_name)
+			else
+				--They just want to blank so update the note to make it blank.
+				Insert_Note(player_name, result)
+			end	
+			
+		else
+			Insert_Note(player_name, result)
+		end
+	else
+		--Do nothing
+		Note("Note editing cancelled.")
+		return
+	end
+end
+
+function Insert_Note(player_name, note)
+	local time_date_stamp = os.time()
+
+	
+	--First lets see if it exists?
+	if (Name_Already_In_Database(player_name)) then
+		--It's already in the database so just update and include last updated date
+		local sql_statement = string.format("UPDATE Player_Notes SET notes=%s, last_updated=%s WHERE player_name=%s", fixsql(note), time_date_stamp, fixsql(player_name))
+
+		if (db:exec(sql_statement)) then
+			Note("The note for '" .. player_name .. "' was successfully updated.")
+		else
+			Report_DB_Error("Insert_Note", sql_statement)
+		end
+	else
+		--It's NOT in the database so INSERT and include CREATED date.
+		local sql_statement = string.format("INSERT INTO Player_Notes (player_name, notes, last_updated, created) VALUES (%s, %s, %s, %s)",  fixsql(player_name), fixsql(note), time_date_stamp, time_date_stamp)
+		
+		local prepared_statement = db:prepare (sql_statement)  --> returns 0 (SQLITE_OK)
+
+		local database_result = prepared_statement:step()   -- returns 101 (SQLITE_DONE)
+		if (database_result == sqlite3.DONE) then
+			--correctly stepped!
+		else
+			Report_DB_Error("Insert_Note", sql_statement)
+		end
+
+		if (prepared_statement:finalize() == sqlite3.OK) then
+			Note("New player note created for '" .. player_name .. "'")
+		else
+			Report_DB_Error("Insert_Note", sql_statement)
+		end
+	end
+end
+
+function Delete_Player_Notes(player_name)
+	if (Name_Already_In_Database(player_name)) then
+	
+		local sql_statement = string.format("DELETE FROM Player_Notes WHERE player_name=%s",  fixsql(player_name))
+				
+		local prepared_statement = db:prepare (sql_statement)  --> returns 0 (SQLITE_OK)
+
+		local database_result = prepared_statement:step()   -- returns 101 (SQLITE_DONE)
+		if (database_result == sqlite3.DONE) then
+			--stepped
+		else
+			Report_DB_Error("Delete_Player_Notes", sql_statement)
+		end
+
+		if (prepared_statement:finalize() == sqlite3.OK) then
+			Note("Player note for '" .. player_name .. "' was deleted.")
+		else
+			Note("Problem deleting in Delete_Player_Notes")
+			Report_DB_Error("Delete_Player_Notes", sql_statement)
+		end
+	else
+		Note("No notes found for '" .. player_Name "'")
+	end
+end
+
+function Show_Player_Notes(player)
+	local sql_statement = string.format("SELECT * FROM Player_Notes WHERE player_name=%s", fixsql(player))
+	local notes_exist = false
+	local seperator = "------------------------------------------------------------"
+	
+	for row in db:nrows(sql_statement) do
+		Note(seperator)
+		notes_exist = true
+		Note("Your player notes for " .. player .. ":")
+		Note("")
+		Note(row.notes)
+		Note("")
+		Tell("Last Updated: " .. os.date("%x %X", row.last_updated))
+		Note("   Created: " .. os.date("%x %X", row.created))
+		
+		Note(seperator)
+		Hyperlink ("fnote add " .. player, "Click here to edit this note.", "Edit this note" , "", 0)
+		Note("")
+		Note("")
+	end
+
+	
+	if (not notes_exist) then
+		Note(seperator)
+		Hyperlink ("fnote add " .. player, "No note exists for '" .. player .. "'. Click to add one.", "No note exists" , "", 0)
+		Note("")
+		Note(seperator)
+	end
+end
+
+function Get_Current_Note(player_name)
+	local sql_statement = string.format("SELECT notes FROM Player_Notes WHERE player_name=%s", fixsql(player_name))
+	
+	for row in db:nrows(sql_statement) do
+		return row.notes
+	end
+
+	--If we got to this point there is no note so just return blank
+	return ""
+end
+ 
+function Name_Already_In_Database(player_name)
+	local sql_statement = string.format("SELECT player_name from Player_Notes WHERE player_name=%s", fixsql(player_name))
+ 
+	local prepared_statement = db:prepare (sql_statement)  --> returns 0 (SQLITE_OK)
+	local row_result = prepared_statement:step()   -- returns 101 (SQLITE_DONE)
+	
+	if (row_result == sqlite3.DONE) then
+		return false
+	elseif (row_result == sqlite3.ROW) then
+		return true
+	else
+		Note("Error in Name_Already_In_Database, SQL statement returned an unexpected result")
+		return false
+	end	
+end
+
+function fixsql (s)
+	--stole this function from the GMCP mapper that comes with aardwolf
+  if s then
+    return "'" .. (string.gsub (s, "'", "''")) .. "'" -- replace single quotes with two lots of single quotes
+  else
+    return "NULL"
+  end -- if
+end -- fixsql
+
+function Report_DB_Error(function_name, attempted_sql_statement)
+	Note("Error (" .. db:errcode() .. " " .. db:errmsg() .. ") in function ".. function_name .. " when executing the following SQL Statement: '" .. attempted_sql_statement .. "'")
+end
+
+function OnPluginInstall  ()
+	db = assert (sqlite3.open( GetInfo (66) .. "player_notes.sqlite" ) )
+	
+	assert (db:exec ([=[
+			CREATE TABLE IF NOT EXISTS "Player_Notes" (
+			"player_id" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL  UNIQUE ,
+			"player_name" TEXT COLLATE NOCASE,
+			"notes" TEXT, 
+			"last_updated" INTEGER, 
+			"created" INTEGER
+				)]=]))
+end
+
+function Show_All_Players_With_Notes()
+	local sql_statement = string.format("SELECT player_name FROM Player_Notes", fixsql(player))
+	local notes_exist = false
+	local seperator = "------------------------------------------------------------"
+	
+	local number = 0
+	
+	Note(seperator)
+	Note("The following players have notes (click name to show):")
+	Note("")
+	
+	for row in db:nrows(sql_statement) do
+		number = number + 1
+		Tell("   " .. number .. ". ")
+		Hyperlink ("fnote " .. row.player_name, row.player_name, "Show this note" , "", 0)
+		Note("")
+	end
+	Note("")
+	Note(seperator)
+	Note("")
+	Note("")
+	
+end
+
+]]>
+</script>
+</muclient>
