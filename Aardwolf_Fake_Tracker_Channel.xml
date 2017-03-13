@@ -20,7 +20,7 @@
    >
 <description trim="y">
 <![CDATA[
-Aardwolf Fake Tracker Channel v 1.1
+Aardwolf Fake Tracker Channel v 1.2
 
 <=================== ACTIONS ===================>
 tracker help                   --> Displays this message.                                 
@@ -32,9 +32,10 @@ tracker                        --> To use just set your tracker plugins to
 
 <==================== SETUP ====================>
 1) Create a mudside alias using this command:
-      "alias tracker echo {chan ch=tracker}@r[@RTracker@r]@w:"
-  Note: You can change the color codes to whatever you like, but the {chan ch=tracker} 
-     is required and must be a different color than the part after.
+      "alias tracker echo @r[@RTracker@r]@w:"
+  Note: You can change the color codes to whatever you like, but the [Tracker]: 
+     is required.  If you had a previous version of this plugin note that the
+     alias has changed and will need to be updated.
 
 
 <========== WHY IS IT SETUP LIKE THIS?==========>
@@ -54,7 +55,8 @@ plugins that have channels set would need to send to Execute.
 
 <triggers>
    <trigger
-   match="{chan ch=tracker}*"
+   match="^\[Tracker\]\:(.*?)$"
+   regexp="y"
    script="ProcessTrackerMessage"
    send_to="10"
    sequence="100"
@@ -110,44 +112,23 @@ function OnPluginInstall ()
 end
 
 function ProcessTrackerMessage (name, line, wildcards, styles)
-	--This part of the function sends the line to Fiendish's Chat Window Plugin
-	-- and rmoves the chan=tracker part.
-	local style_copy = {}
-	
-	for _, v in ipairs (styles) do
-		if (v.text ~= "{chan ch=tracker}") then -- don't want to print the chan=tracker part
-			table.insert(style_copy, v)
-		end
-	end -- for each style run
-		
-	local styles_to_colors = StylesToColoursOneLine(style_copy)
+	--This part of the function sends the line to Fiendish's Chat Window
+	local styles_to_colors = StylesToColoursOneLine(styles)
 	CallPlugin("b555825a4a5700c35fa80780","storeFromOutside",styles_to_colors)
 	
 	--This stuff is for the tracker channel history function
 	if (#tracker_history >= 100) then
 		-- Only keep last 100 so add and remove.
 		tracker_history = table.remove(tracker_history, 1)
-		table.insert(tracker_history, style_copy)
+		table.insert(tracker_history, styles)
 	else
-		table.insert(tracker_history, style_copy)
+		table.insert(tracker_history, styles)
 	end
 end -- a
 
-function Print_Tracker_History()
-	--[[require "tprint"
-	
-	if (tracker_history == nil) then
-		Note("Tracker history is nil")
-	else
-		tprint(tracker_history)
-		Note("")
-	end
-	--]]
-	
+function Print_Tracker_History()	
 	for key, value in pairs(tracker_history) do
 		styles = value
-		--tprint(styles)
-		--Note("Styles for key '"..key.."': ")
 			for _, v in ipairs (styles) do
 				--Borrowed this code from here: http://www.gammon.com.au/forum/bbshowpost.php?bbsubject_id=9713
 				--Why must printing the same line with coloring be so complicated.
