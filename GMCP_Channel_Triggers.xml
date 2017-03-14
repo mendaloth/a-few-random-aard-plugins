@@ -21,9 +21,7 @@
 
 No help file really needed, this is just an example.
 
-
-
-It also shows a similar process if you want to match the entire line and your regex includes how the channel comes through.  For instance newbie channel, immtalks do not have quotes, nor do socials and emotes.
+It shows how to use regex and GMCP to match lines when channel information comes through.
 
 ]]>
 </description> 
@@ -106,7 +104,7 @@ function OnPluginBroadcast (msg, id, name, text)
 				if (show_messages_debug) then
 					Note("Channel is " .. chan)
 					Note("Message with colors stripped is " .. strip_colours(msg))
-					Note('Meat of message is "' .. Get_Message_Meat(strip_colours(msg))..'"')
+					Note('Content of message is "' .. Get_Message_Content(strip_colours(msg))..'"')
 					Note("Player is " .. player)  --GMCP doesn't come with any pretitles yay!
 				end
 				
@@ -131,16 +129,16 @@ function OnPluginBroadcast (msg, id, name, text)
 				re = rex.new([[^invite (?P<player_to_invite>.*)]])
 				 
 				--Note: This example shows how you might match just the message for channels that are wrapped in ' quotes automatically.  
-				--Get_Message_Meat will get everything between the '' in a channel/tell/message.  It fails if there are no ' so be careful how you
-				--use it.
-				local _, _, tempdata = re:match (Get_Message_Meat(strip_colours(msg)))
+				--Get_Message_Content will get everything between the '' in a channel/tell/message.  It fails if there are no ' so be careful how you
+				--use it.  For instance newbie channel, immtalks do not have quotes, nor do socials and emotes.
+				local _, _, tempdata = re:match (Get_Message_Content(strip_colours(msg)))
 				--If there is a match in the re:match above
 				--it will create a table with a column named player_to_invite
 				
 				if (tempdata) then
 					--If there is no match this will be nil and won't get here.
 					
-					Note("The player to invite was '" .. tempdata['player_to_invite'] .. "'.  This version was the one that matched just the meat of the message.")
+					Note("The player to invite was '" .. tempdata['player_to_invite'] .. "'.  This version was the one that matched just the Content of the message.")
 					return --Once you have match, you can always use return to stop looking at other possible matches. I just show you all of these so you can
 					       --see the different ways to do it.
 				end
@@ -159,7 +157,7 @@ function strip_colours (s)
    return (s:gsub ("%z", "@")) -- put @ back
 end -- strip_colours
 
-function Get_Message_Meat(msg)
+function Get_Message_Content(msg)
   --GMCP messages arrive in this format: XXX tells you 'message'
   --this plugin removes the last ' and captures just the message itself.
 	if (string.find(msg, "'")) then
@@ -168,7 +166,7 @@ function Get_Message_Meat(msg)
 		return string.sub(msg, start_loc, end_loc)
 	else
 		-- really should be a ' in here, but something went wrong!
-		return "ERROR in Get_Message_Meat Function"
+		return "ERROR in Get_Message_Content Function"
 	end  
 end
 
