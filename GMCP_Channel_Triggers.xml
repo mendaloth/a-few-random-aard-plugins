@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE muclient>
+<!-- Saved on Monday, December 24, 2012, 12:23 PM -->
+<!-- MuClient version 4.84 -->
+
+<muclient>
+<plugin
+   name="GMCP_Channel_Triggers_Example"
+   author="Mendaloth"
+   id="572cf8130d9d9617f0b16ca2"
+   language="Lua"
+   purpose="Example of how to match channels now that you can't use triggers."
+   save_state="y"
+   date_written="2012-12-24 12:21:40"
+   requires="4.84"
+   version="1.0"
+   >
+
+<description trim="n">
+<![CDATA[
+
+No help file really needed, this is just an example.
+
+
+
+It also shows a similar process if you want to match the entire line and your regex includes how the channel comes through.  For instance newbie channel, immtalks do not have quotes, nor do socials and emotes.
+
+]]>
+</description> 
+
+</plugin>
+ 
+
+
+<!--  Get our standard constants -->
+
+<include name="constants.lua"/>
+
+<!--  Triggers  -->
+
+<triggers>
+	
+</triggers>
+
+
+<aliases>  
+ 
+</aliases>
+  
+
+  
+  
+
+
+
+
+
+
+<!--  Script  -->
+
+
+<script>
+<![CDATA[
+
+require "gmcphelper"
+
+function OnPluginBroadcast (msg, id, name, text)
+
+	local show_messages_debug = false
+
+   -- Look for GMCP handler.
+	if (id == '3e7dedbe37e44942dd46d264') then
+		if (text == "comm.channel") then
+			 res, gmcparg = CallPlugin("3e7dedbe37e44942dd46d264","gmcpval","comm.channel")         
+			 luastmt = "gmcpdata = " .. gmcparg
+			 assert (loadstring (luastmt or ""))()
+
+			 msg = gmcpval("msg") or ""
+			 
+			 if (show_messages_debug) then
+				Note("The raw message with all the color codes is '" .. msg .."'")
+			 end
+			 
+			 chan = gmcpval("chan") or ""
+			 local player = gmcpval("player") or ""
+			 
+			--if you know the message will always be the same you don't even need regex
+			--just use an if statement like this example:
+			if (strip_colours(msg) == [[A bluefish says, "I don't feel like talking just now."]]) then
+				--Note [[ ]] are just like quotes but I use them so I don't have to worry about whether
+				--there are quotes in the message itself.
+				Note("It was a match with a bluefish!")
+			end
+			
+			-- can even combine like this to only look at a specific channel (mobsay in this example) and a specific player
+			-- or mob (a bluefish in verume for this example).
+			if (strip_colours(msg) == [[A bluefish says, "I don't feel like talking just now."]] and chan=="mobsay" and player =="a bluefish") then
+				--Note [[ ]] are just like quotes but I use them so I don't have to worry about whether
+				--there are quotes in the message itself.
+				Note("It was a match with chan and player being bluefish!")
+			end
+
+			
+			--If I want to match just one or a few different channels I can use an if statement to do so:
+			if (chan == "clantalk" or chan == "gtell") then
+				if (show_messages_debug) then
+					Note("Channel is " .. chan)
+					Note("Message with colors stripped is " .. strip_colours(msg))
+					Note('Meat of message is "' .. Get_Message_Meat(strip_colours(msg))..'"')
+					Note("Player is " .. player)  --GMCP doesn't come with any pretitles yay!
+				end
+				
+				-- create new regular expression which matches words
+				re = rex.new([[\(Group\) (?P<player_name_title>.*)\: \'invite (?P<player_to_invite>.*)\']])
+				 
+				--Note: This example shows how you might match the entire message.  It comes through with everything, including the channel name/player name
+				--and the channel message.
+				local _, _, tempdata = re:match (strip_colours(msg))
+				--If there is a match in the re:match above
+				--it will create a table with a column named player_to_invite and a column named player_name_title, but you'd probably not want
+				--to use player_name_title just use the player variable above you get from GMCP.  It's more reliable and don't need to worry
+				--about pretitles.
+				
+				if (tempdata) then
+					--If there is no match this will be nil and won't get here.
+					
+					Note("The player to invite was '" .. tempdata['player_to_invite'] .. "'.  This version was the one that matched the entire group talk message.")
+				end
+				
+				-- create new regular expression which matches words
+				re = rex.new([[^invite (?P<player_to_invite>.*)]])
+				 
+				--Note: This example shows how you might match just the message for channels that are wrapped in ' quotes automatically.  
+				--Get_Message_Meat will get everything between the '' in a channel/tell/message.  It fails if there are no ' so be careful how you
+				--use it.
+				local _, _, tempdata = re:match (Get_Message_Meat(strip_colours(msg)))
+				--If there is a match in the re:match above
+				--it will create a table with a column named player_to_invite
+				
+				if (tempdata) then
+					--If there is no match this will be nil and won't get here.
+					
+					Note("The player to invite was '" .. tempdata['player_to_invite'] .. "'.  This version was the one that matched just the meat of the message.")
+					return --Once you have match, you can always use return to stop looking at other possible matches. I just show you all of these so you can
+					       --see the different ways to do it.
+				end
+			end
+		end
+	end
+end
+
+-- code borrowed from Fiendish's aardwolf_colors_lua
+-- Strip all color codes from a string
+function strip_colours (s)
+   s = s:gsub ("@%-", "~")    -- fix tildes
+   s = s:gsub ("@@", "\0")  -- change @@ to 0x00
+   s = s:gsub ("@x%d?%d?%d?", "") -- strip valid and invalid xterm color codes
+   s = s:gsub ("@.([^@]*)", "%1") -- strip normal color codes and hidden garbage
+   return (s:gsub ("%z", "@")) -- put @ back
+end -- strip_colours
+
+function Get_Message_Meat(msg)
+  --GMCP messages arrive in this format: XXX tells you 'message'
+  --this plugin removes the last ' and captures just the message itself.
+	if (string.find(msg, "'")) then
+		local start_loc = string.find(msg, "'")+1 --find the first ' and cut it out
+		local end_loc = string.len(msg)-1 --cut off the last '
+		return string.sub(msg, start_loc, end_loc)
+	else
+		-- really should be a ' in here, but something went wrong!
+		return "ERROR in Get_Message_Meat Function"
+	end  
+end
+
+]]>
+</script>
+
+
+</muclient>
