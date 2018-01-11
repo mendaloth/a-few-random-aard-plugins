@@ -16,8 +16,7 @@
    
 <description trim="n">
 <![CDATA[
---------------------------------------------------------------------------------
-Aardwolf Finger Notes v1.0.2 Help
+Aardwolf Finger Notes v1.0.3 Help
 
 <=================== ACTIONS ===================>
 fnote help          --> Displays this message.                                 
@@ -66,9 +65,19 @@ fnote del <player>  --> Removes any notes for <player>.
 	Show_Player_Notes(player_name)
 	EnableTrigger("endtriggerline", false)
   </send>
->
-</trigger>
   
+</trigger>
+
+ <trigger
+   enabled="y"
+   match="^\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\- Player \: (.*?) \((.*?)\) \((.*?)\) \-\-\-\-\-\-\-\-\-\-$"
+   regexp="y"
+   omit_from_output="n"
+   script="Process_Player_Line"
+   sequence="10"
+  >
+  </trigger>
+
 </triggers>
 
 <!--  Aliases  -->
