@@ -190,7 +190,7 @@ number_of_pups = 0
 
 function OnPluginInstall ()
 	total_gold_donated = tonumber(GetVariable("total_gold_donated")) or 0
-	pup_limit_until_donate = tonumber(GetVariable("total_gold_donated")) or 10
+	pup_limit_until_donate = tonumber(GetVariable("pup_limit_until_donate")) or 10
 	percent_to_donate = tonumber(GetVariable("percent_to_donate")) or 10
 end
 
