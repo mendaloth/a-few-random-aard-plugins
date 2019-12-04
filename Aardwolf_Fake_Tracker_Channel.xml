@@ -26,6 +26,10 @@ Aardwolf Fake Tracker Channel v 1.2
 tracker help                   --> Displays this message.                                 
 tracker -h                     --> Displays up to 100 of the last tracker
                                  > channel messages.
+tracker tab                    --> Displays the current tab name
+tracker tab <tabname>          --> Sets the tab name of Fiendish's
+                                 > Communication Log window
+tracker tab clear              --> Unsets the tab name
 tracker                        --> To use just set your tracker plugins to 
                                  > send to channel "tracker". 
 								 
@@ -85,6 +89,39 @@ plugins that have channels set would need to send to Execute.
 			Note(GetPluginInfo(GetPluginID(), 3))
 		</send>
 	</alias>  
+  <alias
+	match="tracker tab clear"
+	enabled="y"
+	echo_alias="y"
+	send_to="12"
+	sequence="102">
+		<send>
+			DeleteVariable("tracker_tab")
+			Note("tracker tab cleared")
+		</send>
+	</alias>  
+  <alias
+	match="tracker tab"
+	enabled="y"
+	echo_alias="y"
+	send_to="12"
+	sequence="103">
+		<send>
+			local tab_name = GetVariable("tracker_tab") or ""
+			Note("tracker tab currently set to [" .. tab_name .. "]")
+		</send>
+	</alias>  
+  <alias
+	match="tracker tab *"
+	enabled="y"
+	echo_alias="y"
+	send_to="12"
+	sequence="104">
+		<send>
+			SetVariable("tracker_tab", "%1")
+			Note("tracker tab set to [%1]")
+		</send>
+	</alias>  
   
 </aliases>
 <!--  Script  -->
@@ -114,8 +151,13 @@ end
 function ProcessTrackerMessage (name, line, wildcards, styles)
 	--This part of the function sends the line to Fiendish's Chat Window
 	local styles_to_colors = StylesToColoursOneLine(styles)
-	CallPlugin("b555825a4a5700c35fa80780","storeFromOutside",styles_to_colors)
-	
+	local tab_name = GetVariable("tracker_tab")
+
+	CallPlugin("b555825a4a5700c35fa80780", "storeFromOutside", styles_to_colors)
+	if (tab_name) then
+		CallPlugin("b555825a4a5700c35fa80780", "storeFromOutside", styles_to_colors, tab_name)
+	end
+
 	--This stuff is for the tracker channel history function
 	if (#tracker_history >= 100) then
 		-- Only keep last 100 so add and remove.
