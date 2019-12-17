@@ -28,10 +28,9 @@ tracker -h                     --> Displays up to 100 of the last tracker
                                  > channel messages.
 tracker tab                    --> Displays the current tab name
 tracker tab <tabname>          --> Sets the tab name of Fiendish's
-                                 > Communication Log window.
-                                 > This works only in snapshot r1981 or later,
-                                 > type 'checkversion' to see your AardMush
-                                 > version!
+                                 > Communication Log window.  Tab
+                                 > functionality was added in snapshot
+                                 > r1981.
 tracker tab clear              --> Unsets the tab name
 tracker                        --> To use just set your tracker plugins to
                                  > send to channel "tracker".
