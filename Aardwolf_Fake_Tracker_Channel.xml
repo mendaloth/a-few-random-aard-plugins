@@ -20,24 +20,27 @@
    >
 <description trim="y">
 <![CDATA[
-Aardwolf Fake Tracker Channel v 1.2
+Aardwolf Fake Tracker Channel v 1.2.1
 
 <=================== ACTIONS ===================>
-tracker help                   --> Displays this message.                                 
+tracker help                   --> Displays this message.
 tracker -h                     --> Displays up to 100 of the last tracker
                                  > channel messages.
 tracker tab                    --> Displays the current tab name
 tracker tab <tabname>          --> Sets the tab name of Fiendish's
-                                 > Communication Log window
+                                 > Communication Log window.
+                                 > This works only in snapshot r1981 or later,
+                                 > type 'checkversion' to see your AardMush
+                                 > version!
 tracker tab clear              --> Unsets the tab name
-tracker                        --> To use just set your tracker plugins to 
-                                 > send to channel "tracker". 
-								 
+tracker                        --> To use just set your tracker plugins to
+                                 > send to channel "tracker".
+
 
 <==================== SETUP ====================>
 1) Create a mudside alias using this command:
       "alias tracker echo @r[@RTracker@r]@w:"
-  Note: You can change the color codes to whatever you like, but the [Tracker]: 
+  Note: You can change the color codes to whatever you like, but the [Tracker]:
      is required.  If you had a previous version of this plugin note that the
      alias has changed and will need to be updated.
 
@@ -69,7 +72,7 @@ plugins that have channels set would need to send to Execute.
   </trigger>
 </triggers>
 
-<aliases>	  
+<aliases>
    <alias
    script="Print_Tracker_History"
    match="tracker -h"
@@ -78,7 +81,7 @@ plugins that have channels set would need to send to Execute.
    sequence="100"
   >
   </alias>
-  
+
   <alias
 	match="tracker help"
 	enabled="y"
@@ -88,7 +91,7 @@ plugins that have channels set would need to send to Execute.
 		<send>
 			Note(GetPluginInfo(GetPluginID(), 3))
 		</send>
-	</alias>  
+	</alias>
   <alias
 	match="tracker tab clear"
 	enabled="y"
@@ -99,7 +102,7 @@ plugins that have channels set would need to send to Execute.
 			DeleteVariable("tracker_tab")
 			Note("tracker tab cleared")
 		</send>
-	</alias>  
+	</alias>
   <alias
 	match="tracker tab"
 	enabled="y"
@@ -110,7 +113,7 @@ plugins that have channels set would need to send to Execute.
 			local tab_name = GetVariable("tracker_tab") or ""
 			Note("tracker tab currently set to [" .. tab_name .. "]")
 		</send>
-	</alias>  
+	</alias>
   <alias
 	match="tracker tab *"
 	enabled="y"
@@ -121,8 +124,8 @@ plugins that have channels set would need to send to Execute.
 			SetVariable("tracker_tab", "%1")
 			Note("tracker tab set to [%1]")
 		</send>
-	</alias>  
-  
+	</alias>
+
 </aliases>
 <!--  Script  -->
 
@@ -144,8 +147,8 @@ function OnPluginSaveState ()
 
 end -- function OnPluginSaveState
 
-function OnPluginInstall ()	
-	
+function OnPluginInstall ()
+
 end
 
 function ProcessTrackerMessage (name, line, wildcards, styles)
@@ -168,7 +171,7 @@ function ProcessTrackerMessage (name, line, wildcards, styles)
 	end
 end -- a
 
-function Print_Tracker_History()	
+function Print_Tracker_History()
 	for key, value in pairs(tracker_history) do
 		styles = value
 			for _, v in ipairs (styles) do
@@ -179,7 +182,7 @@ function Print_Tracker_History()
 								v.text)
 			end -- for each style run
 		Note("") -- needed to make a new line
-	end 
+	end
 end
 ]]>
 </script>
