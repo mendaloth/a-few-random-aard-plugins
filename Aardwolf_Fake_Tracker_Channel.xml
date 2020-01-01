@@ -11,7 +11,7 @@
    author="Mendaloth"
    id="9a386e25e87cd9ed2311c961"
    language="Lua"
-   purpose="Allows use of a fake tracker channel, along with history"
+   purpose="Allows use of a fake tracker channel, along with history."
    date_written="2008-10-15 07:35"
    requires="4.89"
    sequence="-5001"
