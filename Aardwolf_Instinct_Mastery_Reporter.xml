@@ -14,7 +14,7 @@
    purpose="Reports your instinct and mastery to room or a channel."
    date_written="2008-10-15 07:35"
    requires="4.30"
-   version="1.0"
+   version="1.01"
    save_state="y"
    >
 <description trim="y">
@@ -23,12 +23,16 @@ Aardwolf Instinct/Mastery Reporter v 1.01
 <================================ ACTIONS =================================>
 help report                --> Displays this help file and the mudside help
                              >  file for the report command.
-report instinct <chan>     --> Reports instinct. If <chan> is omitted 
+report instinct <chan>     --> Reports instinct. If <chan> is omitted
                              > reports to the room.  WARNING: the plugin
                              > does not work if your page size is less than
                              > 51.
 report mastery  <chan>     --> Reports mastery. If <chan> is omitted reports
                              >  to the room.
+report threshold           --> Displays the current report threshold.
+report threshold <number>  --> Sets reporting threshold to <number>.
+                             > Hides any instinct/mastery below this amount.
+
 ----------------------------------------------------------------------------
 ]]>
 </description>
@@ -144,7 +148,7 @@ report mastery  <chan>     --> Reports mastery. If <chan> is omitted reports
 </trigger>
 </triggers>
 
-<aliases>	  
+<aliases>
 <alias
    match="help report"
    enabled="y"
@@ -155,7 +159,7 @@ report mastery  <chan>     --> Reports mastery. If <chan> is omitted reports
     Note(GetPluginInfo(GetPluginID(), 3))
 	SendNoEcho("help report") --The mud side help file should be displayed as well.
   </send>
-</alias> 
+</alias>
 
 <alias
    match="report help"
@@ -167,7 +171,7 @@ report mastery  <chan>     --> Reports mastery. If <chan> is omitted reports
     Note(GetPluginInfo(GetPluginID(), 3))
 	SendNoEcho("report help") --The mud side help file should be displayed as well.
   </send>
-</alias> 
+</alias>
 
 <alias
    match="^report (instinct|mastery) (.*?)$"
@@ -180,13 +184,13 @@ report mastery  <chan>     --> Reports mastery. If <chan> is omitted reports
 		if ("%1" == "instinct") then
 			report_channel = "%2"
 			Refresh_Instinct_Amounts()
-		else 
+		else
 			report_channel = "%2"
 			Refresh_Mastery_Amounts()
 		end
   </send>
-</alias> 
-  
+</alias>
+
 <alias
    match="^report (instinct|mastery)$"
    regexp = "y"
@@ -198,12 +202,41 @@ report mastery  <chan>     --> Reports mastery. If <chan> is omitted reports
 		if ("%1" == "instinct") then
 			report_channel = ""
 			Refresh_Instinct_Amounts()
-		else 
+		else
 			report_channel = ""
 			Refresh_Mastery_Amounts()
 		end
   </send>
-</alias>  
+</alias>
+
+<alias
+   match="^report threshold (\d+)$"
+   regexp = "y"
+   enabled="y"
+   echo_alias="y"
+   send_to="12"
+   sequence="95">
+  <send>
+		SetVariable("report_threshold", "%1")
+		Note("report threshold set to [%1]")
+
+  </send>
+</alias>
+
+<alias
+   match="^report threshold$"
+   regexp = "y"
+   enabled="y"
+   echo_alias="y"
+   send_to="12"
+   sequence="96">
+  <send>
+		local report_threshold = GetVariable("report_threshold") or ""
+		Note("report threshold currently set to [" .. report_threshold .. "]")
+
+  </send>
+</alias>
+
 </aliases>
 <!--  Script  -->
 
@@ -237,20 +270,24 @@ function Process_Instinct_Line(_, line, _, _)
 		--It's a blank line or filled with -, do nothing.
 	else
 		local skill_name = trim(string.sub(line, 11, (11+22)))
-		
+
 		if (skill_name == "Skill name") then
 			--This is the first line so just ignore it.
 			return
 		end
 		instinct_amount = tonumber(trim(string.sub(line, 42, (42+8))))
-		
+
+		local report_threshold = tonumber(GetVariable("report_threshold") or "0")
 		if (instinct_amount == nil) then
 			--This will capture prompts so just ignore them.
 			return
+        elseif (instinct_amount <= report_threshold) then
+			--This will hide points of instinct below threshold.
+			return
 		end
-		
+
 		instinct[skill_name] = {}
-		
+
 		instinct[skill_name].instinct_bought = instinct_amount
 	end
 end
@@ -259,7 +296,7 @@ function Done_Instinct_Capture(trains_available)
 	local formatted_info = ""
 	local highest_instinct = Find_Highest_Instinct()
 	local grouped_instincts = {}
-	
+
 	if (highest_instinct == 0) then
 		--Special case have NO instinct.
 		if (report_channel == "") then
@@ -269,7 +306,7 @@ function Done_Instinct_Capture(trains_available)
 		end
 		return
 	end
-	
+
 	--Count down from highest instinct to lowest
 	for i = highest_instinct, 1, -1 do
 		for key, value in pairs(instinct) do
@@ -287,34 +324,34 @@ function Done_Instinct_Capture(trains_available)
 					table.insert(grouped_instincts, {amount=i, instincts = {key}})
 				end
 			end
-		
+
 		end
 	end
-	
+
 	--First create an array which is all the instincts at the same level formatted
 	local text_of_grouped_instinct = {}
 	for key, value in pairs(grouped_instincts) do
 		table.insert(text_of_grouped_instinct, first_color .. table.concat(value.instincts, second_color .. ", " .. first_color) .. second_color ..": " .. value.amount)
 	end
-	
+
 	local remove_commas = string.gsub(trains_available, ",", "")
-	
+
 	trains_available = tonumber(remove_commas) --remove any separators and convert to a number.
-	
+
 	--if (trains_available) then
 		--trains_available = 0  --something has gone wrong set it to zero.
 	--end
-	
+
 	if (trains_available == 1) then
 		table.insert(text_of_grouped_instinct, first_color .. "Train Available" .. second_color ..": " .. trains_available)
 	else
 		table.insert(text_of_grouped_instinct, first_color .. "Trains Available" .. second_color ..": " .. trains_available)
 	end
-	
+
 	--Now that we have all the instincts at same level formatted and in their own rows by the amount purchased
 	-- combine them into one single string so you can display it.
 	formatted_info = table.concat(text_of_grouped_instinct, seperator_color .. " | ")
-	
+
 	if (report_channel == "") then
 		SendNoEcho("emote reports their instincts: " .. formatted_info)
 	else
@@ -348,16 +385,20 @@ function Process_Mastery_Line(_, line, _, _)
 			--This is the first line so just ignore it.
 			return
 		end
-	
+
 		local mastery_amount = tonumber(trim(string.sub(line, 14, (14+7))))
-		
+
+		local report_threshold = tonumber(GetVariable("report_threshold") or "0")
 		if (mastery_amount == nil) then
 			--This will capture prompts - which won't have a mastery amount - so just ignore them.
 			return
+        elseif (mastery_amount <= report_threshold) then
+			--This will hide points of mastery below threshold.
+			return
 		end
-		
+
 		mastery[mastery_name] = {}
-		
+
 		mastery[mastery_name].mastery_bought = mastery_amount
 	end
 end
@@ -366,7 +407,7 @@ function Done_Mastery_Capture()
 	local formatted_info = ""
 	local highest_mastery = Find_Highest_Mastery()
 	local grouped_masterys = {}
-	
+
 	if (highest_mastery == 0) then
 		--Special case have NO mastery.
 		if (report_channel == "") then
@@ -376,7 +417,7 @@ function Done_Mastery_Capture()
 		end
 		return
 	end
-	
+
 	--Count down from highest mastery to lowest
 	for i = highest_mastery, 1, -1 do
 		for key, value in pairs(mastery) do
@@ -394,20 +435,20 @@ function Done_Mastery_Capture()
 					table.insert(grouped_masterys, {amount=i, masterys = {key}})
 				end
 			end
-		
+
 		end
 	end
-	
+
 	--First create an array which is all the masterys at the same level formatted
 	local text_of_grouped_mastery = {}
 	for key, value in pairs(grouped_masterys) do
 		table.insert(text_of_grouped_mastery, first_color .. table.concat(value.masterys, second_color .. ", " .. first_color) .. second_color ..": " .. value.amount)
 	end
-	
+
 	--Now that we have all the mastery at same level formatted and in their own rows by the amount purchased
 	-- combine them into one single string so you can display it.
 	formatted_info = table.concat(text_of_grouped_mastery, seperator_color .. " | ")
-	
+
 	if (report_channel == "") then
 		SendNoEcho("emote reports their mastery levels: " .. formatted_info)
 	else
@@ -425,7 +466,7 @@ function Find_Highest_Mastery()
 	return highest
 end
 
-function On_Paging_Error()	
+function On_Paging_Error()
 	EnableTriggerGroup("instinct_capture", false)
 	EnableTriggerGroup("mastery_capture", false)
 	EnableTrigger("paging_prompt", false)
