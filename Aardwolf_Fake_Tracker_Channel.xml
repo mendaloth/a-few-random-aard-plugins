@@ -11,7 +11,7 @@
    author="Mendaloth"
    id="9a386e25e87cd9ed2311c961"
    language="Lua"
-   purpose="Allows use of a fake tracker channel, along with history."
+   purpose="Allows use of a fake tracker channel, along with history"
    date_written="2008-10-15 07:35"
    requires="4.89"
    sequence="-5001"
@@ -91,6 +91,28 @@ plugins that have channels set would need to send to Execute.
 			Note(GetPluginInfo(GetPluginID(), 3))
 		</send>
 	</alias>
+	<alias
+	match="tracker date off"
+	enabled="y"
+	echo_alias="y"
+	send_to="12"
+	sequence="102">
+		<send>
+			DeleteVariable("tracker_do_date")
+			Note("tracker will not show date stamps anymore")
+		</send>
+	</alias>
+	<alias
+	match="tracker date on"
+	enabled="y"
+	echo_alias="y"
+	send_to="12"
+	sequence="103">
+		<send>
+			SetVariable("tracker_do_date", "true")
+			Note("tracker will now show date stamps")
+		</send>
+	</alias>
   <alias
 	match="tracker tab clear"
 	enabled="y"
@@ -151,13 +173,25 @@ function OnPluginInstall ()
 end
 
 function ProcessTrackerMessage (name, line, wildcards, styles)
+
 	--This part of the function sends the line to Fiendish's Chat Window
 	local styles_to_colors = StylesToColoursOneLine(styles)
 	local tab_name = GetVariable("tracker_tab")
+	local do_date = GetVariable("tracker_do_date")
+	local date = os.date('%d %M %Y %H:%M:%S')
+	local end_string = "";
 
-	CallPlugin("b555825a4a5700c35fa80780", "storeFromOutside", styles_to_colors)
+	--Form the end string with date stamp
+	if (do_date) then
+	   end_string = "[" .. date .. "] "
+
+	  --Add timestamp to start of styles for history table
+	  table.insert(styles, 1, { backcolour = 0, text = end_string, length = 18, style = 0, textcolour = 0xCECECE })
+	end
+
+	CallPlugin("b555825a4a5700c35fa80780", "storeFromOutside", styles_to_colors, do_date)
 	if (tab_name) then
-		CallPlugin("b555825a4a5700c35fa80780", "storeFromOutside", styles_to_colors, tab_name)
+		CallPlugin("b555825a4a5700c35fa80780", "storeFromOutside", styles_to_colors, tab_name, do_date)
 	end
 
 	--This stuff is for the tracker channel history function
