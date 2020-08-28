@@ -19,21 +19,25 @@
    >
 <description trim="y">
 <![CDATA[
-Aardwolf Instinct Goal Tracker Tracker v 1.01
+Aardwolf Instinct Goal Tracker Tracker v 1.02
 
 <=================== ACTIONS ===================>
 instinct help                   --> Displays this message.                                 
 instinct refresh                --> Refreshes how many of each instinct you have bought
                                   > by checking 'instinct all'.
-instinct goal <instinct>        --> Displays the current goal for <instinct>.
+instinct goal <instinct> [all]  --> Displays the current goal for <instinct>, include all
+                                  > at the end if you want to show goals you have already
+                                  > reached.
 instinct endgoal                --> Shows your progress towards your end goal for every
                                   > instinct.
 instinct nextgoal               --> Shows your progress towards the next unreached goal for
                                   > every instinct.
 
 <=================== Settings ===================>							  						  
-instinct addgoal <instinct> <goal>
-instinct delgoal <instinct> <goal>
+instinct addgoal <instinct> <goal>  -> Adds a goal for an instinct.
+instinct delgoal <instinct> <goal>  -> Deletes a goal for an instinct.  
+instinct delallgoals <instinct>     -> Deletes all goals for a single
+                                     > instinct.
 				
 ]]>
 </description>
@@ -169,6 +173,43 @@ instinct delgoal <instinct> <goal>
 </alias>  
 
 <alias
+   match="^instinct goal (.*?) all$"
+   regexp = "y"
+   enabled="y"
+   echo_alias="y"
+   send_to="12"
+   sequence="94">
+  <send>
+		local is_instinct = Instinct_Exists("%1")
+		local temp_gold_cost, temp_train_cost, total_instincts_to_buy = 0
+		if (is_instinct) then
+			--is instinct returns the key of the instinct so can just use that to display it.
+			Display_Instinct_Goal(instinct[is_instinct]['skillname'], instinct[is_instinct]['instinct_bought'], instinct[is_instinct]['goals'], false, true)
+			
+			if (#instinct[is_instinct]['goals'] ~= 0) then
+				if (instinct[is_instinct]['instinct_bought'] &lt;= instinct[is_instinct]['goals'][#instinct[is_instinct]['goals']]) then
+					total_instincts_to_buy = instinct[is_instinct]['goals'][#instinct[is_instinct]['goals']] -  instinct[is_instinct]['instinct_bought']
+				end
+				temp_gold_cost, temp_train_cost = Get_Goal_Costs(instinct[is_instinct]['instinct_bought'], instinct[is_instinct]['goals'][#instinct[is_instinct]['goals']])
+			else
+				Note("No goals set for " .. instinct[is_instinct]['skillname'] .. " see 'instinct help' for how to set your instinct goals.")
+			end
+			
+			if (temp_gold_cost ~= 0) then
+				--if this is zero then no goals were set or they've already been reached.
+				temp_text = "@R[@C " .. total_instincts_to_buy .. " away from Goal of " .. instinct[is_instinct]['goals'][#instinct[is_instinct]['goals']] .. " " .. instinct[is_instinct]['skillname'] .. " instinct @R] "
+				temp_text = temp_text .. "@RTrains @W" .. Shrink_Number(temp_train_cost) .. "@D (@RRoughly @W" .. Shrink_Number(temp_train_cost/trains_per_pup) .. " @Rpups@D) |"
+				temp_text = temp_text .. " @RGold @W" .. Shrink_Number(temp_gold_cost) .. "@D |"
+				ColourTell_Styles(temp_text)
+			end
+		else
+			Note("There is no instinct named '%1'.")
+		end
+	
+  </send>
+</alias> 
+
+<alias
    match="^instinct addgoal (.*?) (\d*?)$"
    regexp = "y"
    enabled="y"
@@ -228,6 +269,27 @@ instinct delgoal <instinct> <goal>
   </send>
 </alias>  
 
+<alias
+   match="^instinct delallgoals (.*?)$"
+   regexp = "y"
+   enabled="y"
+   echo_alias="y"
+   send_to="12"
+   sequence="95">
+  <send>
+	local is_instinct = Instinct_Exists("%1")
+	if (is_instinct) then
+		--check if the goal already exists.
+		--and if so just empty the goal array
+		instinct[is_instinct]['goals'] = {}
+		Note("Removed all %1 instinct goals.")
+	else
+		--No instinct name
+		Note("There is no instinct named '%1'.")
+	end
+	
+  </send>
+</alias> 
 
 </aliases>
 <!--  Script  -->
@@ -493,18 +555,26 @@ function Next_Goal_Report()
 	--tell mendaloth @R[@C155 Instinct@R] @RTrains @W400.95K@D @D(@RRoughly @W297.4@R pups@D)@w | @RGold @W4.37B@D 
 end
 
-function Display_Instinct_Goal(instinct_name, currently_bought, goal_table, display_only_first)
+function Display_Instinct_Goal(instinct_name, currently_bought, goal_table, display_only_first, show_goals_reached)
 	if (display_only_first == nil) then
 		--Didn't supply a value, default to doing nothing
 		display_only_first = false
 	end
+	
+	if (show_goals_reached == nil) then
+		--Didn't supply a value, default to NOT showing goals you have reached.
+		show_goals_reached = false
+	end
+	
+	
 		if (#goal_table == 0) then
 			--do nothing the user hasn't even set up a goal for this instinct
 			return
 		end
 
 		--Don't need a table when the highest goal is less than amount already bought
-		if (currently_bought >= goal_table[#goal_table]) then
+		--UNLESS we are showing goals reached!
+		if (currently_bought >= goal_table[#goal_table] and not show_goals_reached) then
 			Note("You have reached your instinct goal for " .. instinct_name .. "!")
 			return
 		end
@@ -531,11 +601,24 @@ function Display_Instinct_Goal(instinct_name, currently_bought, goal_table, disp
 					--so stop displaying more
 					keep_displaying = false
 				end
+			else
+				--There is no gold cost so it must have been reached, but check to see if we should display it anyway
+				if (show_goals_reached and keep_displaying) then
+					Note(sep)
+					Note(string.format("|%4.4s|%10.10s|%10.10s|", goal_value, "----", "----"))
+				end
 			end
 			
 		end
 		Note(sep)
 		Note("")
+		
+		--But if we aren't hiding reached items and we've bought them all we should say so now!
+		--UNLESS we are showing goals reached!
+		if (currently_bought >= goal_table[#goal_table] and show_goals_reached) then
+			Note("You have reached your instinct goal for " .. instinct_name .. "!")
+			return
+		end
 end
 
 function Return_Capped_Amount_If_Over_Cap(amount, cap)
