@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE muclient>
+<!-- Saved on Saturday, October 30, 2010, 11:20 AM -->
+<!-- MuClient version 4.61 -->
+
+<muclient>
+<plugin
+   name="Aardwolf_Epic_Helper"
+   author="Mendaloth"
+   id="4c7434c0d7d46b4074d3cdb4"
+   language="Lua"
+   purpose="Various triggers and aliases to help you in epics."
+   save_state="y"
+   date_written="2010-10-30 11:19:47"
+   requires="3.74"
+   version="1.00">
+<description trim="n"><![CDATA[
+--------------------------------------------------------------------------------
+Aardwolf Epic Helper 1.00
+
+epic help           - Displays this help information.
+
+         Changing Settings
+epic ifring on/off - Turns on/off whether you need to be wearing an 
+                          IF ring when pulling the lever.
+
+]]></description>
+</plugin>
+
+<!--  Get our standard constants -->
+<include name="constants.lua"/>
+
+
+<!--  Triggers  -->
+<triggers>
+<trigger
+   match="^You wear (Blue|Red|Gold) \[Ring\] on your (left|right) finger.$"
+   enabled="y"
+   regexp="y"
+   expand_variables="y"
+   send_to="12"
+   sequence="100">
+  <send>
+    wearingIcefallRing = true
+	Note("You are wearing your icefall ring!")
+  </send>
+</trigger>
+
+<trigger
+   match="^You remove (Blue|Red|Gold) \[Ring\] from your (left|right) finger.$"
+   enabled="y"
+   regexp="y"
+   expand_variables="y"
+   send_to="12"
+   sequence="100">
+  <send>
+    wearingIcefallRing = false
+	Note("You removed your icefall ring!")
+  </send>
+</trigger>
+
+<trigger
+   match="^You hold a small Lodestone in your hand.$"
+   enabled="y"
+   regexp="y"
+   expand_variables="y"
+   send_to="12"
+   sequence="100">
+  <send>
+    wearingLodestone = true
+	Note("You are now wearing your Inferno Lodestone.")
+  </send>
+</trigger>
+
+<trigger
+   match="^You stop holding a small Lodestone.$"
+   enabled="y"
+   regexp="y"
+   expand_variables="y"
+   send_to="12"
+   sequence="100">
+  <send>
+    wearingLodestone = false
+	Note("You STOP wearing your Inferno Lodestone.")
+  </send>
+</trigger>
+
+<trigger
+   match="^You wear an Ash-Covered Medallion around your neck.$"
+   enabled="y"
+   regexp="y"
+   expand_variables="y"
+   send_to="12"
+   sequence="100">
+  <send>
+    wearingInfernoMedal = true
+	Note("You are now wearing your inferno medal.")
+  </send>
+</trigger>
+
+<trigger
+   match="^You remove an Ash-Covered Medallion from your neck.$"
+   enabled="y"
+   regexp="y"
+   expand_variables="y"
+   send_to="12"
+   sequence="100">
+  <send>
+    wearingInfernoMedal = false
+	Note("You NO LONGER wearing your inferno medal.")
+  </send>
+</trigger>
+
+</triggers>
+
+
+<!--  Aliases  -->
+<aliases>
+
+<alias
+	match="epic help"
+	enabled="y"
+	echo_alias="y"
+	send_to="12"
+	sequence="101">
+		<send>
+			Note(GetPluginInfo(GetPluginID(), 3))
+		</send>
+	</alias>
+
+<alias
+   match="^epic ifring (on|off)$"
+   regexp="y"
+   enabled="y"
+   echo_alias="y"
+   send_to="12"
+   sequence="100">
+  <send>
+	Note("The passed value is %1")
+	if ("%1" == "off") then
+		haveIcefallRing = "no"
+		Note ("The plugin will no longer require you to wear an icefall ring before pulling lever.")
+	else
+		haveIcefallRing = "yes"
+		Note ("The plugin will now require you to wear an icefall ring before pulling lever.")
+	end
+
+	SaveState()
+  </send>
+</alias>
+<alias
+   match="^pull lever$"
+   regexp="y"
+   enabled="y"
+   echo_alias="y"
+   send_to="12"
+   sequence="100">
+  <send>
+	if (haveIcefallRing == "no") then
+		Note("You don't have an icefall ring so just pulling lever.")
+		SendNoEcho("pull lever")
+	else
+		-- They have an icefall ring so make sure they are wearing it!
+		if (wearingIcefallRing) then
+			Note("You are wearing your icefall ring, so now pulling lever.")
+			SendNoEcho("pull lever")
+		else
+			Note("Ignoring 'pull lever' you are NOT wearing a ring.  This plugin just saved you some IF points!!!  If you really want to pull the lever you can override this with 'pull lever override', but better to either toggle that you own an icefall ring or if this is a bug report it to Mendaloth.")
+		end
+	end
+    
+  </send>
+</alias>  
+
+<alias
+   match="^pull lever override$"
+   regexp="y"
+   enabled="y"
+   echo_alias="y"
+   send_to="12"
+   sequence="100">
+  <send>
+    Note("We aren't checking to see if you are wearing your ring, just pulling the lever.")
+	SendNoEcho("pull lever")
+  </send>
+</alias>  
+
+<alias
+   match="^(forge hard|forge normal)$"
+   regexp="y"
+   enabled="y"
+   echo_alias="y"
+   send_to="12"
+   sequence="100">
+  <send>
+    Note("You typed forge hard or forge normal.  But we want to forge the highest possible token you can to prevent mistakes.  So will cycle through them all starting with EXTREME!")
+	SendNoEcho("forge extreme")
+	SendNoEcho("forge hard")
+	SendNoEcho("forge normal")
+  </send>
+</alias> 
+
+<alias
+   match="^\*?bow bura$"
+   regexp="y"
+   enabled="y"
+   echo_alias="y"
+   send_to="12"
+   sequence="100">
+  <send>
+	if (wearingLodestone) then
+		Note("You are wearing your Inferno lodestone, so now sending 'bow bura'.")
+		SendNoEcho("bow bura")
+	else
+		Note("Ignoring 'bow bura' you are NOT wearing your Inferno Lodestone.  This plugin just saved you an inferno run!!!  If you really want to bow bura you can override this with 'bow bura override', but please send a bug note to Mendaloth.")
+	end    
+  </send>
+</alias>  
+
+<alias
+   match="^bow bura override$"
+   regexp="y"
+   enabled="y"
+   echo_alias="y"
+   send_to="12"
+   sequence="100">
+  <send>
+    Note("We aren't checking to see if you are wearing inferno lodestone, just sending 'bow bura'.")
+	SendNoEcho("bow bura")
+  </send>
+</alias>  
+
+
+<alias
+   match="^\*?(nod tr|nod tre|nod treas|nod treasu|nod treasur|nod treasure|nod treasurer)$"
+   regexp="y"
+   enabled="y"
+   echo_alias="y"
+   send_to="12"
+   sequence="100">
+  <send>
+	if (wearingMark) then
+		Note("You are wearing your OC Mark, so now sending 'nod treasurer'.")
+		SendNoEcho("nod treas")
+	else
+		Note("Ignoring 'nod treasurer' you are NOT wearing your OC Mark.  This plugin just saved you some an OC run!!!  If you really want to nod treasurer you can override this with 'nod treasurer override', but please send a bug note to Mendaloth.")
+	end    
+  </send>
+</alias>  
+
+<alias
+   match="^nod treasurer override$"
+   regexp="y"
+   enabled="y"
+   echo_alias="y"
+   send_to="12"
+   sequence="100">
+  <send>
+    Note("We aren't checking to see if you are wearing your OC Mark, just nodding.")
+	SendNoEcho("nod treas")
+  </send>
+</alias>  
+
+</aliases>
+
+
+<!--  Script  -->
+<script><![CDATA[
+
+wearingIcefallRing = false
+wearingLodestone = false
+wearingMark = false
+wearingInfernoMedal = false
+
+function OnPluginSaveState ()
+	SetVariable ("haveIcefallRing", haveIcefallRing)
+end -- function OnPluginSaveState
+
+function OnPluginInstall  ()
+	haveIcefallRing = (GetVariable("haveIcefallRing") or "no")
+end -- function OnPluginInstall
+
+
+function OnPluginBroadcast(messageId, pluginId, pluginName, message)
+	if pluginId == "3e7dedbe37e44942dd46d264" and messageId == 1 then
+		if message == "room.info" then
+			--Room info changed
+			--Check if we are in inferno
+			if (Get_Current_Area() == "inferno") then
+			
+				--Get the current room UID
+				local current_room_uid = Get_Current_Room_UID()
+				
+				if (current_room_uid == 37158) then
+					--This is the inferno room BEFORE south
+					if (wearingInfernoMedal) then
+						Note("Nice work, you are wearing your medal!")
+					else
+						for i=1,10 do 
+							--Display the warning a half a second after walking because the GMCP event fires BEFORE the room description is shown and you might miss it.
+							DoAfterSpecial(.7, 'Note("NOT Wearing your medal!!!!!")', 12)
+						end
+					end
+					return
+				end
+				
+				if (current_room_uid == 37161) then
+					--This is the SOUTH room!
+					if (wearingInfernoMedal) then
+						Note("Nice work, you are wearing your medal!")
+					else
+						for i=1,20 do 
+							--Display the warning a half a second after walking because the GMCP event fires BEFORE the room description is shown and you might miss it.
+							DoAfterSpecial(.5, 'Note("NOT Wearing your medal!!!!!")', 12);
+							SendNoEcho("yell LEEROOOOOOOOOOOOY JENKIIIIIIIIIIIIINS!' and moves south without a medal!")
+						end
+					end
+					return
+				end
+			end
+		end -- if
+	end -- if
+end -- function OnPluginBroadcast
+
+function Get_Current_Room_UID()
+	local res
+	local current_zone
+	res, current_zone = CallPlugin("3e7dedbe37e44942dd46d264","gmcpval","room.info.num")
+	-- Get worth from the GMCP plugin
+	return tonumber(current_zone)
+end
+
+function Get_Current_Area()
+	local res
+	local current_zone
+	res, current_zone = CallPlugin("3e7dedbe37e44942dd46d264","gmcpval","room.info.zone")
+	-- Get worth from the GMCP plugin
+	return current_zone
+end
+
+
+]]></script>
+
+</muclient>
