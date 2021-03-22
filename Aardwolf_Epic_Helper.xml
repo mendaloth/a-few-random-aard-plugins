@@ -111,6 +111,32 @@ epic ifring on/off - Turns on/off whether you need to be wearing an
   </send>
 </trigger>
 
+<trigger
+   match="^You wear \-\=The Mark of Oradrin\=\- on your back.$"
+   enabled="y"
+   regexp="y"
+   expand_variables="y"
+   send_to="12"
+   sequence="100">
+  <send>
+    wearingMark = true
+	Note("You are now wearing your Mark from OC.")
+  </send>
+</trigger>
+
+<trigger
+   match="^You remove \-\=The Mark of Oradrin\=\- from your back.$"
+   enabled="y"
+   regexp="y"
+   expand_variables="y"
+   send_to="12"
+   sequence="100">
+  <send>
+    wearingMark = false
+	Note("You NO LONGER wearing your Mark from OC.")
+  </send>
+</trigger>
+
 </triggers>
 
 
