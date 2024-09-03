@@ -14,7 +14,7 @@
    purpose="Reports your instinct and mastery to room or a channel."
    date_written="2008-10-15 07:35"
    requires="4.30"
-   version="1.01"
+   version="1.02"
    save_state="y"
    >
 <description trim="y">
@@ -48,7 +48,7 @@ report threshold <number>  --> Sets reporting threshold to <number>.
    enabled="n"
    regexp="y"
    omit_from_output="y"
-   match="^                                                   ---- Next Cost ----$"
+	 match="^                                                       ---- Next Cost ----$"
    sequence="100"
    name="instinct_capture_start"
    group="instinct_capture"
@@ -270,12 +270,11 @@ function Process_Instinct_Line(_, line, _, _)
 		--It's a blank line or filled with -, do nothing.
 	else
 		local skill_name = trim(string.sub(line, 11, (11+22)))
-
 		if (skill_name == "Skill name") then
 			--This is the first line so just ignore it.
 			return
 		end
-		instinct_amount = tonumber(trim(string.sub(line, 42, (42+8))))
+		instinct_amount = tonumber(trim(string.sub(line, 50, (50+5))))
 
 		local report_threshold = tonumber(GetVariable("report_threshold") or "0")
 		if (instinct_amount == nil) then
@@ -289,6 +288,8 @@ function Process_Instinct_Line(_, line, _, _)
 		instinct[skill_name] = {}
 
 		instinct[skill_name].instinct_bought = instinct_amount
+
+		-- Note(skill_name .. " " .. instinct_amount)
 	end
 end
 
