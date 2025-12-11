@@ -15,7 +15,7 @@
    save_state="y"
    date_written="2010-10-08 18:25:13"
    requires="4.61"
-   version="1.0"
+   version="1.1"
    >
    
 <description trim="n">
@@ -34,18 +34,12 @@ progress hypo <channel> TxRxLx   -  Will send to the <channel> a hypothetical pl
 progress other <name> <channel>  -  Will finger player with <name> and capture that
                                     players progress compared to a T9 SH and send that
                                     information to the <channel>.
-
-progress toggle expsetting       -  A change in July 2014 decreased the exp across all
-                                    tiers.  When this is ON, the plugin will calculate
-                                    your exp using the lower exp.  For now this setting
-                                    defaults to OFF, and won't save across sessions.
-                                    *See note below....
                                     
 progress help                    -  Displays this help file.
 
-*Since the plugin doesn't know how much of your previous exp was under the old or new 
-system, it just assumes you got all of your previous exp under the same system.  This
-is controlled by whichever system is toggled.
+Since the plugin doesn't know how much of your previous exp was under the old or the 
+older or the new tnl values, it just assumes you got all of your previous exp under the 
+current tnl values. 
 									
 ]]>
 </description>   
@@ -150,23 +144,6 @@ is controlled by whichever system is toggled.
 		</send> 
 	</alias>
 	
-	<alias
-	match="progress toggle expsetting"
-	enabled="y"
-	send_to="12"
-	sequence="1"
-	ignore_case="y"
-	>
-	<send>
-		if (exp_setting) then
-			exp_setting = false
-			Note("The experience will be calculated with the values from before experience was changed in July 2014.")
-		else
-			exp_setting = true
-			Note("The experience will be calculated with the new values for experience from the July 2014 changes.")
-		end
-	</send> 
-	</alias>
 </aliases>
 
 <!--  Script  -->
@@ -240,7 +217,16 @@ function Send_Progress_Info(send_to, player_name, player_tier, player_level, pla
 		local superheros_left = total_remorts - players_total_remorts
 		local percent_superheros_left = string.format("%.2f", superheros_left/total_remorts*100).. "%"
 		local player_info = " " .. experience_first_color .. player_name.." T"..player_tier.."R"..player_remort.."L"..player_level
-		SendNoEcho(send_to .. player_info .. " " .. experience_first_color .. "Levels - ".. percent_levels .. " " .. experience_second_color .. "(" .. experience_first_color .. ""..commas(players_total_levels).."" .. experience_second_color .. "/" .. experience_first_color .. ""..commas(total_levels).. "" .. experience_second_color .. ") | " .. experience_first_color .. "Experience - "..percent_exp .. " " .. experience_second_color .. "(" .. experience_first_color .. ""..commas(players_total_exp).."" .. experience_second_color .. "/" .. experience_first_color .. ""..commas(total_exp).. "" .. experience_second_color .. ") | "  .. experience_first_color .. "SHs Left - ".. percent_superheros_left .. " " .. experience_second_color .. "(" .. experience_first_color .. ""..commas(superheros_left).."" .. experience_second_color .. "/" .. experience_first_color .. ""..commas(total_remorts).. "" .. experience_second_color .. ")")
+		SendNoEcho(send_to .. player_info .. " " .. experience_first_color .. "Levels - ".. percent_levels .. " " .. 
+            experience_second_color .. "(" .. experience_first_color .. ""..commas(players_total_levels).."" .. 
+            experience_second_color .. "/" .. experience_first_color .. ""..commas(total_levels).. "" .. 
+            experience_second_color .. ") | " .. experience_first_color .. "Experience - "..percent_exp .. " " .. 
+            experience_second_color .. "(" .. experience_first_color .. ""..commas(players_total_exp).."" .. 
+            experience_second_color .. "/" .. experience_first_color .. ""..commas(total_exp).. "" .. 
+            experience_second_color .. ") | "  .. experience_first_color .. "SHs Left - ".. percent_superheros_left .. 
+            " " .. experience_second_color .. "(" .. experience_first_color .. ""..commas(superheros_left).."" .. 
+            experience_second_color .. "/" .. experience_first_color .. ""..commas(total_remorts).. "" .. 
+            experience_second_color .. ")")
 	else
 		local percent_exp = string.format("%.2f", players_total_exp/total_experience_before_redo*100).. "%"
 		local percent_levels = string.format("%.2f", players_total_levels/total_levels_before_redo*100).. "%"
@@ -249,16 +235,26 @@ function Send_Progress_Info(send_to, player_name, player_tier, player_level, pla
 		local player_info = ""
 		
 		if (player_redos == 1) then
-			player_info = " " .. experience_first_color .. player_name.." T"..player_tier .. "R"..player_remort.."L"..player_level .. " @W(1 Redo)"
+			player_info = " " .. experience_first_color .. player_name.." T"..player_tier .. "R"..player_remort.."L"..
+                player_level .. " @W(1 Redo)"
 		else
-			player_info = " " .. experience_first_color .. player_name.." T"..player_tier .. "R"..player_remort.."L"..player_level .. " @W(".. player_redos .. " Redos)"
+			player_info = " " .. experience_first_color .. player_name.." T"..player_tier .. "R"..player_remort.."L"..
+                player_level .. " @W(".. player_redos .. " Redos)"
 		end
 		
-		local exp_text = "" .. experience_second_color .. ") | " .. experience_first_color .. "Experience - "..percent_exp .. " " .. experience_second_color .. "(" .. experience_first_color .. ""..commas(players_total_exp).."" .. experience_second_color .. "/" .. experience_first_color .. ""..commas(total_experience_before_redo).. "" .. experience_second_color
+		local exp_text = "" .. experience_second_color .. ") | " .. experience_first_color .. "Experience - "..
+            percent_exp .. " " .. experience_second_color .. "(" .. experience_first_color .. ""..
+            commas(players_total_exp).."" .. experience_second_color .. "/" .. experience_first_color .. ""..
+            commas(total_experience_before_redo).. "" .. experience_second_color
 		
-		local level_text = experience_first_color .. "Levels - ".. percent_levels .. " " .. experience_second_color .. "(" .. experience_first_color .. ""..commas(players_total_levels).."" .. experience_second_color .. "/" .. experience_first_color .. ""..commas(total_levels_before_redo)
+		local level_text = experience_first_color .. "Levels - ".. percent_levels .. " " .. experience_second_color .. 
+            "(" .. experience_first_color .. ""..commas(players_total_levels).."" .. experience_second_color .. "/" ..
+            experience_first_color .. ""..commas(total_levels_before_redo)
 		
-		local SH_text = ") | "  .. experience_first_color .. "SHs Complete - ".. percent_superheros_left .. " " .. experience_second_color .. "(" .. experience_first_color .. ""..commas(players_total_remorts).."" .. experience_second_color .. "/" .. experience_first_color .. ""..commas(total_remorts_before_redo).. "" .. experience_second_color .. ")"
+		local SH_text = ") | "  .. experience_first_color .. "SHs Complete - ".. percent_superheros_left .. " " .. 
+            experience_second_color .. "(" .. experience_first_color .. ""..commas(players_total_remorts).."" .. 
+            experience_second_color .. "/" .. experience_first_color .. ""..commas(total_remorts_before_redo).. "" .. 
+            experience_second_color .. ")"
 		
 		SendNoEcho(send_to .. player_info .. " " .. level_text .. exp_text .. SH_text)
 	end
@@ -271,74 +267,14 @@ function tnl(tier,remort)
 -- in the function are his, all mistakes and errors are Mendaloth's alone :).
 -- Been reworked to reflect changes in July 20, 2014 reboot.
 
-	if (exp_setting) then
-		--using the new exp setting so use that function instead.
-		--but only if we aren't on a redo, since redos didn't change
-		if (tier <= 9) then		
-			return new_tnl(tier, remort)
-		end
-	end
+-- Anssett gutted this because toggle expsetting was too annoying to keep up with. everybody's using current exptable now >.>
 
-	local new_max_tnl = 10000
-	
-	if (tier > 9) then
-		new_max_tnl = 5000
-	end
-	
-	if (tier == 0 or tier > 9) then
-		tier = 1
-	end
-
-	local tnlval=tier*1000
-
-	if (tier == 1) then
-		tnlval = 1000
-	end
-
-	if remort < 6 then
-		tnlval=tnlval+((remort-1)*1000)
-	else
-		tnlval=tnlval+(4*1000)
-	end
-	if tnlval > new_max_tnl then
-		tnlval=new_max_tnl
-	end
+	if(tier>10) then tier = 10 end
+    local tnlval = tnl_table[tier][remort]
 	return tnlval
 end
 
-function new_tnl(tier, remort)
-	local first_mort_tnl = 0
-	
-	if (tier <= 1) then 
-		first_mort_tnl = 1000
-	elseif (tier == 2) then
-		first_mort_tnl = 2000
-	elseif (tier == 3) then
-		first_mort_tnl = 3000
-	elseif (tier == 4) then
-		first_mort_tnl = 3000
-	else 
-		first_mort_tnl = (tier-2) * 1000	
-	end
-	
-	if (remort == 1) then
-		return first_mort_tnl
-	end
-	
-	local max_tnl = (tier * 1000) + 2000
-	
-	if (max_tnl > 10000) then 
-		max_tnl = 10000
-	end
-	
-	local tnlval = first_mort_tnl + ((remort-1)*1000)
-
-	if tnlval > max_tnl then
-		tnlval=max_tnl
-	end
-	
-	return tnlval
-end
+--removed the "new tnl" function because it became unnecessary -anssett
 
 function Get_Current_Level()
 	local rest
@@ -500,6 +436,25 @@ function Show_Exp_Table()
 		Note(line)
 		line = ""
 	end
+end
+
+function OnPluginInstall()
+    -- moved this to a lookup table for tnl. saves a *lot* of code flow. -Anssett
+
+   	tnl_table = {}
+	--              r1   r2   r3   r4   r5   r6   r7
+	tnl_table[0] = {1000,1000,1000,2000,2000,2000,2000}
+	tnl_table[1] = {1000,1000,1000,2000,2000,2000,2000}
+	tnl_table[2] = {1000,2000,2000,3000,3000,3000,3000}
+	tnl_table[3] = {2000,2000,3000,3000,4000,4000,4000}
+	tnl_table[4] = {2000,3000,4000,4000,4000,5000,5000}
+	tnl_table[5] = {2000,3000,4000,4000,5000,5000,5000}
+	tnl_table[6] = {3000,4000,4000,5000,5000,5000,6000}
+	tnl_table[7] = {3000,4000,5000,5000,5000,6000,6000}
+	tnl_table[8] = {3000,4000,5000,5000,5000,6000,7000}
+	tnl_table[9] = {4000,5000,6000,7000,8000,9000,10000}
+	tnl_table[10] = {1000,2000,3000,3000,3000,3000,3000}
+
 end
 
 ]]>
